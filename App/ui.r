@@ -80,6 +80,7 @@ tagList(
     introjsUI(),
     tags$script(src = "https://kit.fontawesome.com/ac71e9cf8e.js"),
     tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "styles.css")),
+    
     navbarPage(
         position = "static-top",
         collapsible = TRUE,
@@ -91,6 +92,9 @@ tagList(
         title = title_html,
         tabPanel(
             "Stock assessment selection",
+            actionBttn(inputId = "login", label = "LOGIN", style="simple", size="sm", color = "warning"),
+            verbatimTextOutput(outputId = "text"),
+            br(),
             sidebarLayout(
                 sidebarPanel(
                     width = 5,
