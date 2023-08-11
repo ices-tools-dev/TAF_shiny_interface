@@ -96,8 +96,9 @@ tagList(
             br(),
             sidebarLayout(
                 sidebarPanel(
-                    width = 5,
+                    width = 3,
                     leafletOutput("map_ecoregion"),
+                    br(),
                     selectizeInput(
                         inputId = "selected_locations",
                         label = "ICES Ecoregions",
@@ -108,20 +109,11 @@ tagList(
                         options = list(
                             placeholder = "Select Ecoregion(s)"
                         )
-                    ), selectizeInput(
-                        inputId = "selected_years",
-                        label = "Assessment Year",
-                        choices = Years$Year,
-                        selected = 2023,
-                        multiple = FALSE,
-                        width = "100%",
-                        options = list(
-                            placeholder = "Select assessment year"
-                        )
                     ),
                     selectizeGroupUI(
                         id = "my-filters",
                         params = list(
+                            year = list(inputId = "year", title = "Assessment year:"),
                             stockCode = list(inputId = "stockCode", title = "Stock code:"),
                             species = list(inputId = "species", title = "Common name:"),
                             expertGroup = list(inputId = "expertGroup", title = "Expert group:"),
@@ -131,7 +123,7 @@ tagList(
                     )
                 ),
                 mainPanel(
-                    width = 7,
+                    width = 9,
                     withSpinner(DTOutput("tbl"))
                 )
             )

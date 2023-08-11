@@ -1,0 +1,46 @@
+[
+    {
+        "id": 1,
+        "stockCode": "cod.27.47d20",
+        "year": 2022,
+        "ecoregion": "Greater North Sea",
+        "expertGroup": "WGNSSK",
+        "species": "Cod",
+        "dataCategory": "1",
+        "gitHubUrl": "https://github.com/ices-taf/2022_cod.27.47d20_assessment",
+        "assessmentKey": 17652
+    },
+    {
+        "id": 2,
+        "stockCode": "cod.27.47d20",
+        "year": 2023,
+        "ecoregion": "Greater North Sea",
+        "expertGroup": "WGNSSK",
+        "species": "Cod",
+        "dataCategory": "1",
+        "gitHubUrl": "https://github.com/ices-taf/2023_cod.27.47d20_assessment",
+        "assessmentKey": null
+    },
+    {
+        "id": 3,
+        "stockCode": "her.27.irls",
+        "year": 2023,
+        "ecoregion": "Celtic Seas",
+        "expertGroup": "HAWG",
+        "species": "Herring",
+        "dataCategory": "2",
+        "gitHubUrl": "https://github.com/ices-taf/2023_her.27.irls_assessment",
+        "assessmentKey": null
+    },
+    {
+        "id": 4,
+        "stockCode": "had.27.5a",
+        "year": 2023,
+        "ecoregion": "Greenland Sea",
+        "expertGroup": "WGBIE",
+        "species": "Haddock",
+        "dataCategory": "3",
+        "gitHubUrl": "https://github.com/ices-taf/2023_had.27.5a_assessment",
+        "assessmentKey": null
+    }
+]
