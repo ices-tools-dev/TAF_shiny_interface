@@ -80,7 +80,6 @@ tagList(
     introjsUI(),
     tags$script(src = "https://kit.fontawesome.com/ac71e9cf8e.js"),
     tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "styles.css")),
-    
     navbarPage(
         position = "static-top",
         collapsible = TRUE,
@@ -92,7 +91,7 @@ tagList(
         title = title_html,
         tabPanel(
             "Stock assessment selection",
-            actionBttn(inputId = "login", label = "LOGIN", style="simple", size="sm", color = "warning"),
+            actionBttn(inputId = "login", label = "LOGIN", style = "simple", size = "sm", color = "warning"),
             verbatimTextOutput(outputId = "text"),
             br(),
             sidebarLayout(
@@ -109,6 +108,26 @@ tagList(
                         options = list(
                             placeholder = "Select Ecoregion(s)"
                         )
+                    ), selectizeInput(
+                        inputId = "selected_years",
+                        label = "Assessment Year",
+                        choices = Years$Year,
+                        selected = 2023,
+                        multiple = FALSE,
+                        width = "100%",
+                        options = list(
+                            placeholder = "Select assessment year"
+                        )
+                    ),
+                    selectizeGroupUI(
+                        id = "my-filters",
+                        params = list(
+                            stockCode = list(inputId = "stockCode", title = "Stock code:"),
+                            species = list(inputId = "species", title = "Common name:"),
+                            expertGroup = list(inputId = "expertGroup", title = "Expert group:"),
+                            dataCategory = list(inputId = "dataCategory", title = "Data category:")
+                        ),
+                        inline = FALSE
                     )
                 ),
                 mainPanel(
@@ -122,12 +141,9 @@ tagList(
         ),
         tabPanel(
             "Repo results",
-            
-                
         ),
         tabPanel(
             "Resources",
-            
         )
     )
 )
