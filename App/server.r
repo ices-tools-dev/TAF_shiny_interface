@@ -61,7 +61,8 @@ server <- function(input, output, session) {
       dplyr::arrange(stockCode) %>%
       dplyr::mutate(
         # EcoRegion = removeWords(EcoRegion, "Ecoregion"),
-        Select = sprintf('<input type="radio" name="rdbtn" value="rdbtn_%s"/>', 1:nrow(.))
+        Select = sprintf('<input type="radio" name="rdbtn" value="rdbtn_%s"/>', 1:nrow(.)),
+        RepoUrl = paste0("<a href='", gitHubUrl,"' target='_blank'>Link")
         # stock_description = purrr::map_chr(StockKeyLabel, .f = ~ access_sag_data_local(.x, input$selected_years)$StockDescription[1]),
         # stock_location = parse_location_from_stock_description(stock_description)
       )
@@ -91,7 +92,8 @@ server <- function(input, output, session) {
       # "icon",
       "species",
       "expertGroup",
-      "dataCategory"
+      "dataCategory",
+      "RepoUrl"
     ) %>%
       rename(
         "Select" = Select,
@@ -100,8 +102,8 @@ server <- function(input, output, session) {
         # " " = icon,
         "Common name" = species,
         "Expert group" = expertGroup,
-        "Data category" = dataCategory
-
+        "Data category" = dataCategory,
+        "Repo Url" = RepoUrl
       )
   })
 

@@ -104,7 +104,7 @@ tagList(
                         label = "ICES Ecoregions",
                         choices = sort(shape_eco$Ecoregion),
                         selected = "Greater North Sea",
-                        multiple = FALSE,
+                        multiple = TRUE,
                         width = "100%",
                         options = list(
                             placeholder = "Select Ecoregion(s)"
