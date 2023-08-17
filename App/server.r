@@ -130,5 +130,27 @@ server <- function(input, output, session) {
     ),
     callback = JS(callback)
   )
+
+
+  TAFStatistics <- reactive({
+    TAFStats <- getTAFStocksStatistics()
+  })
+
+   output$plot1 <- renderPlotly({
+    req(TAFStatistics())
+    fig1 <- plot_ly(
+      data = TAFStatistics() %>% filter(categories == input$category),
+      x = ~year, 
+      y = ~stocks,
+      type = 'bar',
+      name = "Assessments not in TAF")
+    fig1 <- fig1 %>% add_trace(
+      y = ~taF_Stocks,
+      name = "Assessments in TAF")
+    fig1 <- fig1 %>% layout(yaxis = list(title = 'N. of stocks'), barmode = 'stack')
+    fig1
+
+   })
+
 }
 

@@ -129,10 +129,22 @@ tagList(
             )
         ),
         tabPanel(
-            "TAF progress"
+            "Assessment results",
         ),
         tabPanel(
-            "Repo results",
+            "TAF overview",
+            plotlyOutput("plot1", height = "100%", width = "50%"),
+            radioButtons(
+                inputId = "category",
+                label = "Data category to show:",
+                choices = c(
+                    "Category 1" = "Cat 1",
+                    "Category 2-6" = "Cat 2-6"
+                ),
+                inline = TRUE,
+                selected = "Cat 1",
+                width = "100%"
+            )
         ),
         tabPanel(
             "Resources",
