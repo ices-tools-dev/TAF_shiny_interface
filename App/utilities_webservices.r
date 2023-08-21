@@ -3,13 +3,6 @@ getListStockAssessments <- function(){
     return(stocklist)
 }
 
-callback <- c(
-  "$('input[name=rdbtn]').on('click', function(){",
-  "  var value = $('input[name=rdbtn]:checked').val();",
-  "  Shiny.setInputValue('rdbtn', value);",
-  "});"
-)
-
 getEGStatistics <- function() {
   EGStats <- jsonlite::read_json("https://adminweb06.ices.dk/api/getEGStatistics", simplifyVector = TRUE)
   return(EGStats)

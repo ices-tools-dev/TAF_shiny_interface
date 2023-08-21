@@ -57,8 +57,9 @@ library(reshape2)
 ########## Load utilities ############
 source("utilities_load_ecoregion_shp.r")
 source("utilities_ecoregion_mapping.r")
-source("getListStockAssessments.r")
-
+source("utilities_webservices.r")
+source("utilities_JS_callbacks.r")
+source("utilities_plotting.r")
 
 
 # Load data
@@ -143,6 +144,12 @@ tagList(
                 ),
                 inline = TRUE,
                 selected = "Cat 1",
+                width = "100%"
+            ),
+            checkboxInput(
+                inputId = "percentages",
+                label = "Show percentages:",
+                value = FALSE,
                 width = "100%"
             )
         ),

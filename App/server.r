@@ -49,6 +49,7 @@ server <- function(input, output, session) {
   repo_list <- reactive({
     req(input$selected_locations)
     stock_list_long <- getListStockAssessments()
+    print(stock_list_long)
     # stock_list_long[stock_list_long$EcoRegion == "Iceland Sea Ecoregion", "EcoRegion"] <- "Icelandic Waters Ecoregion"
     # stock_list_long <- stock_list_long %>% drop_na(AssessmentKey)
     stock_list_long <- purrr::map_dfr(
@@ -138,17 +139,8 @@ server <- function(input, output, session) {
 
    output$plot1 <- renderPlotly({
     req(TAFStatistics())
-    fig1 <- plot_ly(
-      data = TAFStatistics() %>% filter(categories == input$category),
-      x = ~year, 
-      y = ~stocks,
-      type = 'bar',
-      name = "Assessments not in TAF")
-    fig1 <- fig1 %>% add_trace(
-      y = ~taF_Stocks,
-      name = "Assessments in TAF")
-    fig1 <- fig1 %>% layout(yaxis = list(title = 'N. of stocks'), barmode = 'stack')
-    fig1
+
+    TAFStatsPlot(TAFStatistics(), input$category, input$percentages)
 
    })
 
