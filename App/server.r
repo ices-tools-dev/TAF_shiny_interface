@@ -131,7 +131,10 @@ server <- function(input, output, session) {
     ),
     callback = JS(callback)
   )
-
+  
+  output$repo_string <- renderPrint({
+    paste('Repo name:', paste0(input$repo_year, "_", input$stock_code, "_", input$repo_type))
+  })
 
   TAFStatistics <- reactive({
     TAFStats <- getTAFStocksStatistics()

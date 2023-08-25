@@ -47,6 +47,7 @@ library(leaflet)
 library(sf)
 library(shinyjs)
 library(reshape2)
+library(shinydashboard)
 
 
 
@@ -80,8 +81,17 @@ tagList(
     useShinyjs(),
     introjsUI(),
     tags$script(src = "https://kit.fontawesome.com/ac71e9cf8e.js"),
+    tags$script(src = "app.js"),
     tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "styles.css")),
+    tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "AdminLTE.css")),
+    tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "shinydashboard.css")),
     navbarPage(
+        # includeCSS(path = "AdminLTE.css"), #added 
+        # includeCSS(path = "shinydashboard.css"), #added
+
+        #add this file and collapsible nature should work.
+        # includeScript(path = "app.js"), # 
+
         position = "static-top",
         collapsible = TRUE,
         # tab title
@@ -130,7 +140,42 @@ tagList(
             )
         ),
         tabPanel(
-            "Assessment results",
+            "Assessment results",  
+            box(selectizeInput(
+                inputId = "repo_year",
+                label = "Assessment Year",
+                choices = c(2022,2023),
+                selected = 2023,
+                multiple = FALSE,
+                width = "100%"                
+                ), 
+                selectizeInput(
+                inputId = "stock_code",
+                label = "Stock code",
+                choices = c(icesFO::load_sid(2023) %>% arrange(StockKeyLabel) %>% dplyr::select(.,StockKeyLabel) %>% pull(.)),
+                selected = NULL,
+                multiple = FALSE,
+                width = "100%",
+                options = list(
+                    placeholder = "Start typing stock code or select from the list"
+                )                
+                ),
+                selectizeInput(
+                inputId = "repo_type",
+                label = "Type of assessment",
+                choices = c("benchmark","assessment"),
+                selected = "assessment",
+                multiple = FALSE,
+                width = "100%"                
+                ),
+                verbatimTextOutput(outputId = "repo_string"),
+                solidHeader = T,
+                collapsed = TRUE,
+                collapsible = T, 
+                title = "Create TAF repository", 
+                status = "primary")
+ 
+        
         ),
         tabPanel(
             "TAF overview",

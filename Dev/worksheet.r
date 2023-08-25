@@ -189,3 +189,420 @@ myiris <- iris |>
   select(-frac_of_range_temp)
 
 datatable(myiris, escape = FALSE, options = list(dom = "t"))
+
+
+
+
+###############
+
+library(shiny) 
+library(data.tree)
+library(DiagrammeR)
+ui <- fluidPage(
+  uiOutput("mainpage")
+)
+server <- function(input, output){
+  active <- reactiveValues(main = 'initpage')
+  working <- reactiveValues(org = NULL)
+  current <- reactiveValues(ch_name = NULL,prefix  = NULL,addchild=NULL,addsibling=NULL,trunk_nm = NULL)
+  output$mainpage <- renderUI({
+    uiOutput(active$main)
+  })
+  output$initpage <- renderUI({
+    sidebarLayout(
+      sidebarPanel(
+        fixedRow(
+          textInput("parent","name of parent")
+        ),
+        fixedRow(
+          textInput("initch_name","first child node name")
+        ),
+        fixedRow(
+          h5("Must assign parent with initial child node")
+        ),
+        fixedRow(
+          actionButton("crt_parent","Create Parent")
+        )
+      ),
+      mainPanel(
+      )
+    )
+  })
+output$info_panel <- renderUI({
+  tagList(
+    fixedRow(
+    h3("you are here")
+  ),
+  fixedRow(
+    column(h4(current$trunk_nm$name),
+           width=4
+           ),
+    column(h4(current$trunk_nm$level),
+           width=2
+    ),
+    column(textOutput('chi_data'),
+           width=4
+           )
+  )
+  )
+})
+output$chi_data <- renderText({
+  chdata <- chi_cnt()
+  chdata
+})
+chi_cnt <- eventReactive(current$ch_names,{
+ ln <- length(current$trunk_nm$children)
+  for(i in 1:ln){
+    if(i == 1){
+      chi_list <- current$trunk_nm$children[[i]]$name
+    }else{
+      chi_list <- c(chi_list,current$trunk_nm$children[[i]]$name)
+    }
+  }
+  return(chi_list)
+})
+  output$corepage <- renderUI({
+    sidebarLayout(
+      sidebarPanel(
+        #textInput("tree_name","tree name"),
+    uiOutput("info_panel"),
+    fixedRow(
+      if(!is.null(working$org)){
+        selectInput("ttl","traverse to  level",choices=c(current$trunk_nm$name,chi_cnt()),selected = NULL)
+      }
+    ),
+    fixedRow(
+      actionButton("tverse","Climb to level")
+    ),
+    fixedRow(
+      textInput("ch_name","Child node name")
+    ),
+    fixedRow(
+      actionButton("add_child", "Add Child")
+    ),
+    fixedRow(
+      textInput("sib_name","sibling node name")
+    ),
+    fixedRow(
+      actionButton("add_sibling", "Add Sibling")
+    )
+  ),
+  mainPanel(grVizOutput("HTATree")   )
+    )
+  })
+  observeEvent(input$tverse,{
+    current$trunk_nm <- current$trunk_nm$Climb(name=input$ttl)
+  })
+  output$HTATree=renderGrViz({
+   working$org 
+  if(!is.null(working$org)){
+    if(!is.null(current$addchild)){
+    current$trunk_nm$AddChild(current$addchild)
+      current$ch_names <- names(current$trunk_nm$children)
+      current$addchild <- NULL}
+    if(!is.null(current$addsibling)){
+      current$trunk_nm$AddSibling(current$addsibling)
+
+      current$ch_names <- names(current$trunk_nm$children)
+      current$addsibling <- NULL}
+#child2 = org$AddChild("Child_2")
+#child1$AddSibling("Sibling")
+    grViz(DiagrammeR::generate_dot(ToDiagrammeRGraph(working$org)))
+    }
+  })
+
+  observeEvent(input$crt_parent,{
+    active$main <- 'corepage'
+    working$org <- makeorg()
+    current$trunk_nm <- working$org
+  })
+  makeorg <- reactive({
+    if(is.null(input$parent)){
+      return(NULL)
+    }
+    if(is.null(working$org)){
+   working$org <- Node$new(input$parent)
+   working$org$AddChild(input$initch_name)
+   current$ch_names <- names(working$org$children)
+    return(working$org)}else{
+     return(working$org)
+   }
+  })
+  observeEvent(input$add_child,{
+    current$addchild <- input$ch_name
+      })
+  observeEvent(input$add_sibling,{
+        current$addsibling <- input$sib_name
+  })
+}
+shinyApp(ui = ui, server = server) 
+
+
+
+#########################################
+
+library(shiny)
+library(shinydashboard)
+library(shinydashboardPlus)
+ui <- dashboardPage(
+  title = "Box API",
+  dashboardHeader(),
+  dashboardSidebar(),
+  dashboardBody(
+    tags$style("body { background-color: ghostwhite}"),
+    fluidRow(
+      actionButton("toggle_box", "Toggle Box"),
+      actionButton("remove_box", "Remove Box", class = "bg-danger"),
+      actionButton("restore_box", "Restore Box", class = "bg-success"),
+      actionButton("update_box", "Update Box", class = "bg-primary")
+    ),
+    br(),
+    box(
+      title = textOutput("box_state"),
+      "Box body",
+      id = "mybox",
+      collapsible = TRUE,
+      closable = TRUE,
+      plotOutput("plot")
+    )
+  )
+)
+
+server <- function(input, output, session) {
+  output$plot <- renderPlot({
+    req(!input$mybox$collapsed)
+    plot(rnorm(200))
+  })
+  
+  output$box_state <- renderText({
+    state <- if (input$mybox$collapsed) "collapsed" else "uncollapsed"
+    paste("My box is", state)
+  })
+  
+  observeEvent(input$toggle_box, {
+    updateBox("mybox", action = "toggle")
+  })
+  
+  observeEvent(input$remove_box, {
+    updateBox("mybox", action = "remove")
+  })
+  
+  observeEvent(input$restore_box, {
+    updateBox("mybox", action = "restore")
+  })
+  
+  observeEvent(input$update_box, {
+    updateBox(
+      "mybox", 
+      action = "update", 
+      options = list(
+        title = h2("New title", dashboardLabel(1, status = "primary")),
+        status = "danger", 
+        solidHeader = TRUE,
+        width = 4
+      )
+    )
+  })
+  
+  observeEvent(input$mybox$visible, {
+    collapsed <- if (input$mybox$collapsed) "collapsed" else "uncollapsed"
+    visible <- if (input$mybox$visible) "visible" else "hidden"
+    message <- paste("My box is", collapsed, "and", visible)
+    showNotification(message, type = "warning", duration = 1)
+  })
+}
+
+shinyApp(ui, server)
+
+
+library(shiny)
+library(shinyBS)
+
+shinyApp(
+ ui =
+ fluidPage(
+   sidebarLayout(
+     sidebarPanel(HTML("This button will open Panel 1 using updateCollapse."),
+                  actionButton("p1Button", "Push Me!"),
+                  selectInput("styleSelect", "Select style for Panel 1",
+                   c("default", "primary", "danger", "warning", "info", "success"))
+     ),
+     mainPanel(
+       bsCollapse(id = "collapseExample", open = "Panel 2",
+                  bsCollapsePanel("Panel 1", "This is a panel with just text ",
+                   "and has the default style. You can change the style in ",
+                   "the sidebar.", style = "info"),
+                  bsCollapsePanel("Panel 2", "This panel has a generic plot. ",
+                   "and a 'success' style.", plotOutput("genericPlot"), style = "success")
+       )
+     )
+   )
+ ),
+ server =
+ function(input, output, session) {
+   output$genericPlot <- renderPlot(plot(rnorm(100)))
+   observeEvent(input$p1Button, ({
+     updateCollapse(session, "collapseExample", open = c("Panel 1", "Panel 2"))
+   }))
+   observeEvent(input$styleSelect, ({
+     updateCollapse(session, "collapseExample", style = list("Panel 1" = input$styleSelect))
+   }))
+ }
+)
+
+  body <- dashboardBody(
+    useShinyjs(),
+    
+      tags$style(HTML("
+      .box-header {
+        padding: 0 10px 0 0;
+      }
+      .box-header h3 {
+        width: 100%;
+        padding: 10px;
+      }")),
+    
+      fluidRow(
+        box(id="box1", title = "Histogram box title",
+            status = "warning", solidHeader = TRUE, collapsible = T,
+            plotOutput("plot", height = 250)
+        )
+      )
+    )
+  
+    server <- function(input, output) {
+    
+      output$plot <- renderPlot({
+        hist(rnorm(50))
+      })
+    
+      runjs("
+      $('.box').on('click', '.box-header h3', function() {
+          $(this).closest('.box')
+                 .find('[data-widget=collapse]')
+                 .click();
+      });")
+    }
+  
+  shinyApp(
+    ui = dashboardPage(
+      dashboardHeader(),
+      dashboardSidebar(),
+      body
+    ),
+    server = server
+  )
+
+
+  library(shiny)
+
+  ui <- shinyUI(bootstrapPage(
+    absolutePanel(
+      id = "controls", class = "panel panel-default", fixed = TRUE,
+      draggable = TRUE, top = 60, left = "auto", right = 20, bottom = "auto",
+      width = 330, height = "auto",
+      HTML('<button data-toggle="collapse" data-target="#demo">Collapsible</button>'),
+      tags$div(
+        id = "demo", class = "collapse",
+        checkboxInput("input_draw_point", "Draw point", FALSE),
+        verbatimTextOutput("summary")
+      )
+    )
+  ))
+
+  server <- shinyServer(function(input, output, session) {
+    output$summary <- renderPrint(print(cars))
+  })
+
+  shinyApp(ui = ui, server = server)
+
+
+
+
+library(shiny)
+
+# Define UI for application that draws a histogram
+ui <- fluidPage(
+
+  includeCSS(path = "AdminLTE.css"), #added 
+  includeCSS(path = "shinydashboard.css"), #added
+
+  #add this file and collapsible nature should work.
+  includeScript(path = "app.js"), # 
+
+   # Application title
+   titlePanel("Old Faithful Geyser Data"),
+
+   # Sidebar with a slider input for number of bins 
+   sidebarLayout(
+      sidebarPanel(
+         sliderInput("bins",
+                     "Number of bins:",
+                     min = 1,
+                     max = 50,
+                     value = 30)
+      ),
+
+      # Show a plot of the generated distribution
+      mainPanel(
+         box(plotOutput("distPlot"), solidHeader = T, collapsible = T, title = "collapsible box not collapsing", status = "primary")
+      )
+   )
+)
+
+# Define server logic required to draw a histogram
+server <- function(input, output) {
+
+   output$distPlot <- renderPlot({
+      # generate bins based on input$bins from ui.R
+      x    <- faithful[, 2] 
+      bins <- seq(min(x), max(x), length.out = input$bins + 1)
+
+      # draw the histogram with the specified number of bins
+      hist(x, breaks = bins, col = 'darkgray', border = 'white')
+   })
+}
+
+# Run the application 
+shinyApp(ui = ui, server = server)
+
+
+library(shiny)
+library(shinydashboard)
+
+ui <- dashboardPage(
+  dashboardHeader(disable = TRUE),
+  dashboardSidebar(disable = TRUE),
+  dashboardBody(
+  # Application title
+  titlePanel("Old Faithful Geyser Data"),
+    # Sidebar with a slider input for number of bins 
+    sidebarLayout(
+      sidebarPanel(
+         sliderInput("bins", "Number of bins:", min = 1, max = 50, value = 30)
+      ),
+      # Show a plot of the generated distribution
+      mainPanel(
+         box(plotOutput("distPlot"), solidHeader = T, collapsible = T, 
+             title = "collapsible box not collapsing", status = "primary")
+      )
+    ) 
+  )
+)
+# Define server logic required to draw a histogram
+server <- function(input, output) {
+   output$distPlot <- renderPlot({
+      # generate bins based on input$bins from ui.R
+      x    <- faithful[, 2] 
+      bins <- seq(min(x), max(x), length.out = input$bins + 1)
+      # draw the histogram with the specified number of bins
+      hist(x, breaks = bins, col = 'darkgray', border = 'white')
+   })
+}
+
+# Run the application 
+shinyApp(ui = ui, server = server)
+
+
+
+test <- icesFO::load_sid(2023) %>% dplyr::select(.,StockKeyLabel)
