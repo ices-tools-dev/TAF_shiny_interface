@@ -85,13 +85,8 @@ tagList(
     tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "styles.css")),
     tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "AdminLTE.css")),
     tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "shinydashboard.css")),
+    
     navbarPage(
-        # includeCSS(path = "AdminLTE.css"), #added 
-        # includeCSS(path = "shinydashboard.css"), #added
-
-        #add this file and collapsible nature should work.
-        # includeScript(path = "app.js"), # 
-
         position = "static-top",
         collapsible = TRUE,
         # tab title
@@ -169,6 +164,7 @@ tagList(
                 width = "100%"                
                 ),
                 verbatimTextOutput(outputId = "repo_string"),
+                actionBttn(inputId = "create_repo", label = "Create Repo", style = "simple", size = "sm", color = "warning"),
                 solidHeader = T,
                 collapsed = TRUE,
                 collapsible = T, 
