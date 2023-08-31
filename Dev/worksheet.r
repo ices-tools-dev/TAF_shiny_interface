@@ -606,3 +606,175 @@ shinyApp(ui = ui, server = server)
 
 
 test <- icesFO::load_sid(2023) %>% dplyr::select(.,StockKeyLabel)
+
+icesTAF::dir.tree(path = "D:/GitHub_2023/2023_FisheriesOverview")
+
+
+
+library(shiny)
+library(shinyTree)
+
+ui <- fluidPage(
+  shinyTree::shinyTree('myShinyTree',
+                       checkbox = TRUE,
+                       themeIcons = FALSE,
+                       theme = 'proton'
+                       )
+)
+
+server <- function(input, output, session) {
+  df <- data.frame(continent = c(rep("Letteria", 2), rep("Numberalia", 1)),
+                   country = c("<img src = 'flag_A.png' width = '50px' /> A-Land", 
+                               "<img src = 'flag_B.png' width = '50px' /> B-Country",
+                               "<img src = 'flag_1.png' width = '50px' /> Uni Kingdom"
+                               )
+                   )
+
+  output$myShinyTree <-  renderTree({
+    tree_list <- dfToTree(df) ## dfToTree converts df into a hierarch. list
+    attr(tree_list, 'stopened') <- TRUE
+    ## set the 'stopened' attribute on each node to uncollapse the whole tree
+    tree_list <- tree_list |>
+      Map(f = \(.) {attr(., 'stopened') <- TRUE; .})
+
+  })
+}
+
+shinyApp(ui, server)
+
+
+
+
+
+
+library(data.tree)
+library(shiny)
+library(shinyTree)
+library(shinyjs)
+
+## load acme and alter some nodes
+data(acme)
+acme$IT$li_attr         <- list(class = "myl")
+acme$Accounting$icon    <- "file"
+
+
+ui <- fluidPage(
+  tags$head(
+    tags$style(HTML(".myl {color: red}"))
+  ),
+  useShinyjs(),
+  sidebarLayout(
+    sidebarPanel(
+      h2("Input"),
+      verbatimTextOutput("input_tree"),
+      helpText("This shinyTree control receives this ", code("data.tree"), " as input.",
+               "In order to use that, ", code("treeToJSON(.)"), " is called with the tree.",
+               "The resulting JSON can be found below."),
+      verbatimTextOutput("json")
+    ),
+    mainPanel(
+      h2("Output"),
+      fluidRow(
+        column(width = 4,
+               h3("ShinyTree"),
+               shinyTree("tree", dragAndDrop = TRUE)
+        ),
+        column(width = 7,
+               h3(code("input$tree")),
+               helpText("Change radio buttons once or change the tree to",
+                        "force rendering of", code("input$tree")),
+               radioButtons("parser",
+                            "Parser:",
+                            c("tree", "list")),
+               verbatimTextOutput("output_tree"),
+               helpText("As you can see, only attributes", code("cost"), "and",
+                        code("p"), "are in slot", code("data"), ".",
+                        code("li_attr"), "and", code("icon"), "were on the top level",
+                        "of the node and are thus not returned by shinyTree.",
+                        "State is always generated anew and hence also part of",
+                        code("input$tree"), "despite sitting also on the top level.")
+        )
+      )
+    )
+  )
+)
+
+server <- function(input, output, session) {
+  print_tree <- function(tree) {
+    if (is(tree, "Node")) {
+      do.call(print, c(x = tree, as.list(tree$fieldsAll)))
+    } else {
+      str(tree)
+    }
+  }
+  
+  observe({
+    options(shinyTree.defaultParser = input$parser)
+    ## trigger "ready.jstree" by hand to force input$tree to update
+    runjs("$('.jstree').trigger('ready.jstree')")
+  })
+  
+  get_json <- reactive({
+    treeToJSON(acme, pretty = TRUE)
+  })
+  
+  output$input_tree  <- renderPrint(print_tree(acme))
+  output$output_tree <- renderPrint(print_tree(req(input$tree)))
+  output$json        <- renderPrint(cat(get_json()))   
+  output$tree        <- renderTree(get_json())
+}
+
+shinyApp(ui, server)
+
+
+library(shinyFileTree)
+
+install.packages("shinyFileTree")
+shinyFileTree(icesTAF::dir.tree(path = "D:/GitHub_2023/2023_FisheriesOverview"), 
+             is_directory = TRUE,
+             plugins = c("checkbox"),
+             multiple = TRUE,
+             opts = shinyFileTreeOpts(icons = TRUE)
+)
+devtools::install_github("fbreitwieser/shinyFileTree")
+
+
+
+
+library(shiny)
+library(shinyTree)
+
+#' Examples of using jstree types to define node attributes
+#' @author Michael Bell \email{bellma@@lilly.com}
+shinyServer(function(input, output, session) {
+  log <- c(paste0(Sys.time(), ": Interact with the tree to see the logs here..."))
+  
+  treeData <- reactive({
+    list(
+      root1 = structure("", stselected=TRUE,sttype="root"),
+      root2 = structure(list(
+        SubListA = structure(list(
+            leaf1 = structure("",sttype="file",sticon="fa fa-signal"), 
+            leaf2 = structure("",sttype="file"),
+            leaf3 = structure("",sttype="file")),
+            sttype="root",stopened=TRUE
+            ),
+        SubListB = structure(list(
+          leafA = structure("",sttype="default",sticon="glyphicon glyphicon-leaf"),
+          leafB = structure("",sttype="default",sticon="shinyTree/icon.png"),
+          leafC = structure("",sttype="default",sticon="map-signs")
+          ),stopened=TRUE,sttype="root")
+      ),
+      sttype="root",stopened=TRUE
+    )
+  )
+  })
+  
+  observeEvent(input$updateTree,{
+    updateTree(session, treeId = "tree", data = treeData())
+  })
+  
+  output$tree <- renderTree({
+    treeData()
+  })
+})

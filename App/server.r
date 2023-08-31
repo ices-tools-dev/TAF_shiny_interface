@@ -136,6 +136,42 @@ server <- function(input, output, session) {
     paste('Repo name:', paste0(input$repo_year, "_", input$stock_code, "_", input$repo_type))
   })
 
+  output$folder_tree <- renderPrint({
+    icesTAF::dir.tree(path = "D:/GitHub_2023/2023_FisheriesOverview")
+  })
+
+  output$html_tree <- reactive({
+    HTML("
+    <div class='tree'>
+    <ul>
+      <li><i class='fa fa-folder-open'></i> Project
+        <ul>
+          <li><i class='fa fa-folder-open'></i> Opened Folder <span>- 15kb</span>
+            <ul>
+              <li><i class='fa fa-folder-open'></i> css
+                <ul>
+                  <li><i class='fa fa-code'></i> CSS Files <span>- 3kb</span>
+                  </li>
+
+                </ul>
+              </li>
+              <li><i class='fa fa-folder'></i> Folder close <span>- 10kb</span>
+              </li>
+              <li><i class='fab fa-html5'></i> index.html</li>
+              <li><i class='fa fa-picture-o'></i> favicon.ico</li>
+            </ul>
+          </li>
+          <li><i class='fa fa-folder'></i> Folder close <span>- 420kb</span>
+
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+    
+    ")
+  })
+
   TAFStatistics <- reactive({
     TAFStats <- getTAFStocksStatistics()
   })

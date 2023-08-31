@@ -85,7 +85,6 @@ tagList(
     tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "styles.css")),
     tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "AdminLTE.css")),
     tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "shinydashboard.css")),
-    
     navbarPage(
         position = "static-top",
         collapsible = TRUE,
@@ -135,43 +134,56 @@ tagList(
             )
         ),
         tabPanel(
-            "Assessment results",  
-            box(selectizeInput(
-                inputId = "repo_year",
-                label = "Assessment Year",
-                choices = c(2022,2023),
-                selected = 2023,
-                multiple = FALSE,
-                width = "100%"                
-                ), 
-                selectizeInput(
-                inputId = "stock_code",
-                label = "Stock code",
-                choices = c(icesFO::load_sid(2023) %>% arrange(StockKeyLabel) %>% dplyr::select(.,StockKeyLabel) %>% pull(.)),
-                selected = NULL,
-                multiple = FALSE,
-                width = "100%",
-                options = list(
-                    placeholder = "Start typing stock code or select from the list"
-                )                
+            "Assessment results",
+            sidebarLayout(
+                sidebarPanel(
+                    width = 9,
+                    verbatimTextOutput(outputId = "folder_tree"),
+                    htmlOutput(outputId = "html_tree", inline = FALSE)
                 ),
-                selectizeInput(
-                inputId = "repo_type",
-                label = "Type of assessment",
-                choices = c("benchmark","assessment"),
-                selected = "assessment",
-                multiple = FALSE,
-                width = "100%"                
-                ),
-                verbatimTextOutput(outputId = "repo_string"),
-                actionBttn(inputId = "create_repo", label = "Create Repo", style = "simple", size = "sm", color = "warning"),
-                solidHeader = T,
-                collapsed = TRUE,
-                collapsible = T, 
-                title = "Create TAF repository", 
-                status = "primary")
- 
-        
+                mainPanel(
+                    width = 3,                    
+                    # style = "float: left;",
+                    box(
+                        selectizeInput(
+                            inputId = "repo_year",
+                            label = "Assessment Year",
+                            choices = c(2022, 2023),
+                            selected = 2023,
+                            multiple = FALSE,
+                            width = "100%"
+                        ),
+                        selectizeInput(
+                            inputId = "stock_code",
+                            label = "Stock code",
+                            choices = c(icesFO::load_sid(2023) %>% arrange(StockKeyLabel) %>% dplyr::select(., StockKeyLabel) %>% pull(.)),
+                            selected = NULL,
+                            multiple = FALSE,
+                            width = "100%",
+                            options = list(
+                                placeholder = "Start typing stock code or select from the list"
+                            )
+                        ),
+                        selectizeInput(
+                            inputId = "repo_type",
+                            label = "Type of assessment",
+                            choices = c("benchmark", "assessment"),
+                            selected = "assessment",
+                            multiple = FALSE,
+                            width = "100%"
+                        ),
+                        verbatimTextOutput(outputId = "repo_string"),
+                        actionBttn(inputId = "create_repo", label = "Create Repo", style = "simple", size = "sm", color = "warning"),
+                        
+                        width = "100%",
+                        solidHeader = T,
+                        collapsed = TRUE,
+                        collapsible = T,
+                        title = "Create TAF repository",
+                        status = "primary"
+                    )
+                )
+            ),
         ),
         tabPanel(
             "TAF overview",
