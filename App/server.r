@@ -108,13 +108,7 @@ server <- function(input, output, session) {
       )
   })
 
-  # stock_list_reactive <- reactive({
-  #   req(input$selected_locations)
-  #   getListStockAssessments()
-  # })
-  
   output$tbl <- DT::renderDT(
-    # stock_list_reactive()
     group_filter(),
     escape = FALSE,
     selection = "none",
@@ -132,6 +126,15 @@ server <- function(input, output, session) {
     callback = JS(callback)
   )
   
+  observeEvent(input$repo_year, {
+    updateSelectInput(
+      session = getDefaultReactiveDomain(),
+      inputId = "stock_code",
+      label = "Stock code",
+      choices = c(icesFO::load_sid(input$repo_year) %>% arrange(StockKeyLabel) %>% dplyr::select(., StockKeyLabel) %>% pull(.)),
+      selected = NULL
+    )
+  })
   output$repo_string <- renderPrint({
     paste('Repo name:', paste0(input$repo_year, "_", input$stock_code, "_", input$repo_type))
   })
@@ -180,6 +183,17 @@ server <- function(input, output, session) {
     req(TAFStatistics())
 
     TAFStatsPlot(TAFStatistics(), input$category, input$percentages)
+
+   })
+
+  EgStatistics <- reactive({
+    EgStats <- getEGStatistics()
+  })
+
+  output$plot2 <- renderPlotly({
+    req(EgStatistics())
+
+    EGStatsPlot(EgStatistics())
 
    })
 

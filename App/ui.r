@@ -148,7 +148,7 @@ tagList(
                         selectizeInput(
                             inputId = "repo_year",
                             label = "Assessment Year",
-                            choices = c(2022, 2023),
+                            choices = c(2018, 2022, 2023),
                             selected = 2023,
                             multiple = FALSE,
                             width = "100%"
@@ -204,7 +204,8 @@ tagList(
                 label = "Show percentages:",
                 value = FALSE,
                 width = "100%"
-            )
+            ),
+        plotlyOutput("plot2", height = "100%", width = "50%")
         ),
         tabPanel(
             "Resources",

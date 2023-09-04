@@ -778,3 +778,64 @@ shinyServer(function(input, output, session) {
     treeData()
   })
 })
+
+test_tree <- icesTAF::dir.tree(path = "D:/GitHub_2023/2023_FisheriesOverview")
+shinyTree::treeToDf(test, hierarchy = NULL)
+shinyTree::treeToJSON(test_tree)
+
+library(devtools)
+install_github("trinker/pathr")
+library(pathr)
+test <- tree(path = "D:/GitHub_2023/2023_FisheriesOverview", include.files = TRUE, all.files = TRUE,
+  use.data.tree = TRUE, out = NULL, additional = NULL,
+  copy2clip = FALSE)
+
+
+
+dat <- tibble::tribble(
+  ~level1,~level2,~level3,~level4,
+  "Beverages","Water","","",
+  "Beverages","Coffee","","",
+  "Beverages","Tea","Black tea","",
+  "Beverages","Tea","White tea","",
+  "Beverages","Tea","Green tea","Sencha",
+  "Beverages","Tea","Green tea","Gyokuro",
+  "Beverages","Tea","Green tea","Matcha",
+  "Beverages","Tea","Green tea","Pi Lo Chun"
+)
+
+paths <- data.frame(pathString = apply(dat, 1, paste0, collapse = "/"))
+paths <- list.dirs(path = "D:/GitHub_2023/2023_FisheriesOverview", full.names = TRUE, recursive = TRUE)
+
+
+library(data.tree)
+tree <- as.Node(paths)
+LL <- as.list(tree)
+L <- LL[-1]
+
+library(htmltools)
+
+f <- function(node, nodeName){
+  if(all(lengths(node) == 0) && length(names(node))){
+    tagList(
+      tags$p(nodeName),
+      do.call(tags$ul, unname(lapply(names(node), tags$li)))
+    )
+  }else{
+    if(length(names(node))){
+      tags$li(
+        tags$p(nodeName),
+        do.call(tags$ul, mapply(f, node, names(node), SIMPLIFY = FALSE, USE.NAMES = FALSE))
+      )
+    }else{
+      tags$li(
+        tags$p(nodeName)
+      )
+    }
+  }
+}
+
+lis <- mapply(f, L, names(L), SIMPLIFY = FALSE, USE.NAMES = FALSE)
+ul <- do.call(tags$ul, lis)
+
+html <- as.character(tagList(tags$p(LL$name), ul))
