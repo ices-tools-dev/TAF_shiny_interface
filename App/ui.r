@@ -55,6 +55,7 @@ library(shinydashboard)
 
 
 
+
 ########## Load utilities ############
 source("utilities_load_ecoregion_shp.r")
 source("utilities_ecoregion_mapping.r")
@@ -187,7 +188,10 @@ tagList(
         ),
         tabPanel(
             "TAF overview",
-            plotlyOutput("plot1", height = "100%", width = "50%"),
+            fluidRow(
+                column(width = 6,
+                
+            plotlyOutput("plot1", height = "100%", width = "100%"),
             radioButtons(
                 inputId = "category",
                 label = "Data category to show:",
@@ -204,8 +208,12 @@ tagList(
                 label = "Show percentages:",
                 value = FALSE,
                 width = "100%"
-            ),
-        plotlyOutput("plot2", height = "100%", width = "50%")
+            )
+                ),
+                column(width = 6,
+        plotlyOutput("plot2", height = "100%", width = "100%")
+        )
+            )
         ),
         tabPanel(
             "Resources",

@@ -839,3 +839,184 @@ lis <- mapply(f, L, names(L), SIMPLIFY = FALSE, USE.NAMES = FALSE)
 ul <- do.call(tags$ul, lis)
 
 html <- as.character(tagList(tags$p(LL$name), ul))
+
+
+library(plotly)
+library(crosstalk)
+
+d <- SharedData$new(txhousing, ~city)
+p <- ggplot(d, aes(date, median, group = city)) + geom_line()
+p <- ggplot(EGStats, aes(year, percent, group = expertGroup)) + geom_line()
+fig <- ggplotly(p, tooltip = "expertGroup") %>%
+  highlight(on = "plotly_hover", color = "red")
+
+
+
+d <- highlight_key(txhousing, ~city)
+p <- ggplot(d, aes(date, median, group = city)) + geom_line()
+gg <- ggplotly(p, tooltip = "city") 
+highlight(gg,on = "plotly_hover", color = "red",dynamic = TRUE)
+
+
+d <- highlight_key(EGStats, ~expertGroup)
+p <- ggplot(d, aes(year, percent, group = expertGroup)) + geom_line() + geom_point()
+gg <- ggplotly(p, tooltip = "expertGroup") 
+highlight(gg, on = "plotly_hover", color = "red",,dynamic = TRUE)
+
+
+
+
+library(shiny)
+library(shinyjs)
+library(dplyr)
+library(ggplot2)
+
+set.seed(1)
+words <- sort(sapply(1:50, USE.NAMES = F, FUN = function (x) paste(sample(letters, 15), collapse = "")), decreasing = T)
+
+dat <- data.frame(words, f = sort(rgamma(50, shape = 5, scale = 1)),stringsAsFactors = F)
+
+ui <- pageWithSidebar(
+  headerPanel("Playground"),
+  sidebarPanel(),
+  mainPanel(
+    uiOutput("links"),
+    plotOutput("out.plot"),
+    useShinyjs()
+  ))
+
+server <- function(input, output, session) {
+  urls <- lapply(dat$words, FUN = function (x) {
+    div(id=x, a(paste0(" ", x, " "),
+      href = paste0("https://", x, ".de"),
+      target = "_blank"))
+  })
+  output$links <- renderUI({
+    tagList(urls)
+  })
+
+  # Add a reactieVal that we can update once an object is hovered.
+  hovered_element <- reactiveVal('')
+
+  # Add onevent for each element in dat$words, to update reactiveVal.
+  lapply(dat$words,function(x){
+    onevent(event='mouseleave',id=x,hovered_element(''))
+    onevent(event='mouseenter',id=x,hovered_element(x))
+  })
+
+  # Add a reactive for the dataset, which we debounce so it does not invalidate too often.
+  my_data <- reactive({    
+    dat$color <- ifelse(dat$words==hovered_element(),'hovered','')
+    dat
+  })
+  my_data <- my_data %>% debounce(50) # tune for responsiveness
+
+  # Plot
+  output$out.plot <- renderPlot({
+    ggplot(my_data(), aes(x = words, y = f,fill=color)) +
+      geom_bar(stat = "identity") +
+      theme(axis.text.x = element_text(angle = 90)) + theme(legend.position="none")
+  })
+}
+
+shinyApp(ui, server)
+
+
+
+#############################################
+
+set.seed(1014)
+df <- data.frame(x = rnorm(100), y = rnorm(100))
+
+ui <- fluidPage(
+  plotOutput("plot", click = "plot_click", )
+)
+server <- function(input, output, session) {
+  dist <- reactiveVal(rep(1, nrow(df)))
+  observeEvent(input$plot_click,
+    dist(nearPoints(df, input$plot_click, allRows = TRUE, addDist = TRUE)$dist_)  
+  )
+  
+  output$plot <- renderPlot({
+    df$dist <- dist()
+    ggplot(df, aes(x, y, size = dist)) + 
+      geom_point() + 
+      scale_size_area(limits = c(0, 1000), max_size = 10, guide = NULL)
+  }, res = 96)
+}
+
+EGStats <- jsonlite::read_json("https://adminweb06.ices.dk/api/getEGStatistics", simplifyVector = TRUE)
+
+ui <- fluidPage(
+  plotOutput("plot", click = "plot_click", )
+)
+
+server <- function(input, output, session) {
+  # dist <- reactiveVal(rep(1, nrow(EGStats)))
+  
+  test <- eventReactive(input$plot_click,{
+    nearPoints(df = EGStats, 
+                coordinfo = input$plot_click, 
+                xvar = year,
+                yvar = percent,
+                allRows = TRUE)
+})
+
+  output$plot <- renderPlot({
+    print(test())
+    # EGStats$dist <- dist()
+    ggplot(EGStats, aes(year, percent, color = expertGroup)) + 
+      geom_point() + 
+      scale_size_area(limits = c(0, 1000), max_size = 10, guide = NULL)
+  }, res = 96)
+}
+
+
+#create a SharedData object for use in the ggplot below, group by 'groups' 
+d <- highlight_key(xy, ~groups )
+
+#create a normal ggplot to fit your needs, but use the SharedData object as data for the chart
+p <- ggplot( d, aes(x = letters, y = values, group = groups)) + theme_bw() + geom_point()
+
+#now ggplotly the newly created ggplot, and add text for the tooltips as needed
+gg <- ggplotly( p, tooltip = "groups" )
+
+#set the highlight-options to your liking, and plot...
+highlight( gg, on = "plotly_hover", off = "plotly_deselect", color = "red" )
+
+
+
+library(gapminder)
+g <- highlight_key(gapminder, ~country)
+continent_filter <- filter_select(
+  "filter", "Select a country", 
+  g, ~continent
+)
+
+p <- plot_ly(g) %>%
+  group_by(country) %>%
+  add_trace(x = ~year, y = ~lifeExp, color = ~continent, mode = 'lines+markers') %>%
+  layout(xaxis = list(title = "")) %>%
+  highlight(selected = attrs_selected(showlegend = FALSE))
+
+bscols(continent_filter, p, widths = 12)
+
+
+library(gapminder)
+g <- highlight_key(EGStats, ~expertGroup)
+
+
+p <- plot_ly(g) %>%
+  group_by(expertGroup) %>%
+  add_trace(x = ~year, y = ~percent, color = ~expertGroup, mode = 'lines+markers', line = list(shape = 'spline', smoothing = .9)) %>%
+  layout(xaxis = list(title = "")) %>%
+  highlight(selected = attrs_selected(showlegend = FALSE))
+
+bscols(continent_filter, p, widths = 12)
+
+
+install.packages("BiocManager")
+library(rhdf5)
+BiocManager::install("rhdf5")
+h5f = h5read("D:/GitHub_2023/tafXplorer/App/Sample.h5","df")
+h5f = H5Fopen("D:/GitHub_2023/tafXplorer/App/Sample.h5")

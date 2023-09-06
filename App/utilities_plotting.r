@@ -43,9 +43,20 @@ EGStatsPlot <- function(EGStatistic) {
         # fig <- EGStatistic %>% count(expertGroup, total)
         # fig <- fig %>% plot_ly(x = ~expertGroup, y = ~total, color = ~year)
 
-        fig <- plot_ly(EGStatistic, x = ~year,y = ~ total, mode = 'lines', color = ~expertGroup)
+        # fig <- plot_ly(EGStatistic, x = ~year,y = ~ percent, mode = 'lines', color = ~expertGroup)
 
+        # p <- ggplot(EGStatistic, aes(year, percent, group = expertGroup)) + geom_line()
+        # fig <- ggplotly(p, tooltip = "city") %>%
+        #         highlight(on = "plotly_hover", color = "red")
         
+g <- highlight_key(EGStatistic, ~expertGroup)
+
+
+p <- plot_ly(g) %>%
+  group_by(expertGroup) %>%
+  add_trace(x = ~year, y = ~percent, color = ~expertGroup, mode = 'lines+markers', line = list(shape = 'spline', smoothing = .9, width = 4), marker = list(size = 8)) %>%
+  layout(xaxis = list(title = "")) %>%
+  highlight(selected = attrs_selected(showlegend = FALSE))
 
     # if (isTRUE(percentage)) {
     #     fig2 <- plot_ly(
@@ -74,5 +85,5 @@ EGStatsPlot <- function(EGStatistic) {
     #     )
     #     fig1 <- fig1 %>% layout(yaxis = list(title = "N. of stocks"), barmode = "stack")
     # # }
-    fig
+    p
 }
