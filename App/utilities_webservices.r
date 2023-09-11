@@ -20,50 +20,55 @@ getTAFStocksStatistics <- function() {
 
 
 create_interactive_tree <- function(path, repo) {
-
-
-paths <- list.files(path, recursive = TRUE, full.names = TRUE,
-            include.dirs = TRUE)
-
-# to clean off initial path -  will not need this in production
-paths <- gsub("D:/GitHub_2023/2023_FisheriesOverview", "", paths)
-
-tree <- as.Node(data.frame(pathString = paths))
-
-output <- ToDataFrameTree(tree, "pathString", "isLeaf", "level")
-output$filename <- basename(output$pathString)
-
-output$urlString <- paste0("https://ices-taf.shinyapps.io/tafexplorer?pathstring=", output$pathString, "&repo=",repo)
-
-# could be handy for file icons
-tools::file_ext(output$filename)
-
-
-makeOne <- function(i) {
-  paste0(
-    paste(rep("  ", output$level[i] - 1), collapse = ""),
-    "* ",
-    "[", output$filename[i], "]",
-    "(",  output$urlString[i], ")"
+  paths <- list.files(path,
+    recursive = TRUE, full.names = TRUE,
+    include.dirs = TRUE
   )
+
+  # to clean off initial path -  will not need this in production
+  paths <- gsub("D:/GitHub_2023/tafXplorer/Dev/ices_cat_3_template", "", paths)
+
+  tree <- as.Node(data.frame(pathString = paths))
+
+  output <- ToDataFrameTree(tree, "pathString", "isLeaf", "level")
+  output$filename <- basename(output$pathString)
+  # output$filename <- paste0("`r shiny::icon('markdown')` ", output$filename)
+
+  output$urlString <- paste0("https://ices-taf.shinyapps.io/tafexplorer?pathstring=", output$pathString, "&repo=", repo)
+
+  # could be handy for file icons
+  tools::file_ext(output$filename)
+
+
+  makeOne <- function(i) {
+    paste0(
+      paste(rep("  ", output$level[i] - 1), collapse = ""),
+      "* ",
+       shiny::icon('markdown'), 
+      "[", output$filename[i], "]",
+      "(", output$urlString[i], ")"
+    )
+  }
+
+  all <- paste(
+    sapply(1:nrow(output), makeOne),
+    collapse = "\n"
+  )
+
+
+  cat(all)
+
+
+  html <- markdown::mark(text = all)
+
+  return(html)
 }
 
-all <- paste(
-  sapply(1:nrow(output), makeOne),
-  collapse = "\n"
-)
 
-
-cat(all)
-
-
-html <- markdown::mark(text = all)
-
-return(html)
-}
-
-path <- "D:/GitHub_2023/2023_FisheriesOverview"
-
+path <- "D:/GitHub_2023/tafXplorer/Dev/ices_cat_3_template"
 repo <- "testRepo"
+# html <- create_interactive_tree("D:/GitHub_2023/tafXplorer/Dev/ices_cat_3_template", "testRepo")
+# HTML(html)
 
-
+cane <- paste0("`r shiny::icon('markdown')` ", "cane")
+HTML(markdown::mark(text = cane))

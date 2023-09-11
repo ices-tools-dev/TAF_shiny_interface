@@ -139,12 +139,8 @@ server <- function(input, output, session) {
     paste('Repo name:', paste0(input$repo_year, "_", input$stock_code, "_", input$repo_type))
   })
 
-  output$folder_tree <- renderPrint({
-    icesTAF::dir.tree(path = "D:/GitHub_2023/2023_FisheriesOverview")
-  })
-
   output$html_tree <- reactive({
-    HTML(create_interactive_tree(path, repo))
+    HTML(create_interactive_tree("D:/GitHub_2023/tafXplorer/Dev/ices_cat_3_template", "testRepo"))
   })
 
   TAFStatistics <- reactive({
