@@ -48,6 +48,7 @@ library(sf)
 library(shinyjs)
 library(reshape2)
 library(shinydashboard)
+library(data.tree)
 
 
 
@@ -139,7 +140,7 @@ tagList(
             sidebarLayout(
                 sidebarPanel(
                     width = 9,
-                    verbatimTextOutput(outputId = "folder_tree"),
+                    # verbatimTextOutput(outputId = "folder_tree"),
                     htmlOutput(outputId = "html_tree", inline = FALSE)
                 ),
                 mainPanel(

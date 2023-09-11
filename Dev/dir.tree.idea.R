@@ -1,7 +1,7 @@
 library(data.tree)
 
 
-path <- "D:/TAF/dashboard/"
+path <- "D:/GitHub_2023/2023_FisheriesOverview"
 
 repo <- "testRepo"
 
@@ -9,7 +9,7 @@ paths <- list.files(path, recursive = TRUE, full.names = TRUE,
             include.dirs = TRUE)
 
 # to clean off initial path -  will not need this in production
-paths <- gsub("D:/TAF/dashboard/", "", paths)
+paths <- gsub("D:/GitHub_2023/2023_FisheriesOverview", "", paths)
 
 tree <- as.Node(data.frame(pathString = paths))
 
