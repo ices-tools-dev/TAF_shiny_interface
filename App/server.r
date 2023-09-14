@@ -149,6 +149,10 @@ server <- function(input, output, session) {
     HTML(create_interactive_tree("D:/GitHub_2023/tafXplorer/App/Data/ices_cat_3_template", "testRepo"))
   })
 
+  output$img <- renderUI({
+      tags$img(src = "https://www.r-project.org/logo/Rlogo.png")
+  })
+  
   TAFStatistics <- reactive({
     TAFStats <- getTAFStocksStatistics()
   })

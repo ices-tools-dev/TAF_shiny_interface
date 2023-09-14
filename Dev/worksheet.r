@@ -1020,3 +1020,20 @@ library(rhdf5)
 BiocManager::install("rhdf5")
 h5f = h5read("D:/GitHub_2023/tafXplorer/App/Sample.h5","df")
 h5f = H5Fopen("D:/GitHub_2023/tafXplorer/App/Sample.h5")
+
+
+
+library(shiny)
+
+ui <- fluidPage(
+  h4("Embedded image"),
+  uiOutput("img")
+)
+
+server <- function(input, output, session) {
+  output$img <- renderUI({
+      tags$img(src = "https://www.r-project.org/logo/Rlogo.png")
+  })
+}
+
+shinyApp(ui, server)

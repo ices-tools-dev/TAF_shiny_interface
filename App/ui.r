@@ -182,8 +182,7 @@ tagList(
                 ),
                 mainPanel(
                     width = 9,                    
-                    
-                    
+                    uiOutput("img")                    
                 )
             ),
         ),
