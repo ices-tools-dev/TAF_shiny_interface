@@ -36,7 +36,7 @@ library(tidyverse)
 library(tm)
 library(widgetframe)
 library(icesASD)
-library(mixfishtools)
+# library(mixfishtools)
 library(shiny)
 library(shinyWidgets)
 library(mapplots)
@@ -137,16 +137,7 @@ tagList(
         ),
         tabPanel(
             "Assessment results",
-            sidebarLayout(
-                sidebarPanel(
-                    width = 9,
-                    # verbatimTextOutput(outputId = "folder_tree"),
-                    htmlOutput(outputId = "html_tree", inline = FALSE)
-                ),
-                mainPanel(
-                    width = 3,                    
-                    # style = "float: left;",
-                    box(
+            box(
                         selectizeInput(
                             inputId = "repo_year",
                             label = "Assessment Year",
@@ -177,13 +168,22 @@ tagList(
                         verbatimTextOutput(outputId = "repo_string"),
                         actionBttn(inputId = "create_repo", label = "Create Repo", style = "simple", size = "sm", color = "warning"),
                         
-                        width = "100%",
+                        width = "30%",
                         solidHeader = T,
                         collapsed = TRUE,
                         collapsible = T,
                         title = "Create TAF repository",
                         status = "primary"
-                    )
+                    ),
+            sidebarLayout(
+                sidebarPanel(
+                    width = 3,
+                    htmlOutput(outputId = "html_tree", inline = FALSE, class="tree")
+                ),
+                mainPanel(
+                    width = 9,                    
+                    
+                    
                 )
             ),
         ),

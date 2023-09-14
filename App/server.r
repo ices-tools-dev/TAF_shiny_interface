@@ -19,6 +19,12 @@
 server <- function(input, output, session) {
   msg("server loop start:\n  ", getwd())
 
+
+  observe({
+    updateQueryString(paste0("?",gsub(" ", "", input$tabset)), mode = "push")
+    print(input$tabset)
+  })
+
   observeEvent(input$login, {
     # display a modal dialog with a header, textinput and action buttons
     showModal(modalDialog(
@@ -140,7 +146,7 @@ server <- function(input, output, session) {
   })
 
   output$html_tree <- reactive({
-    HTML(create_interactive_tree("D:/GitHub_2023/tafXplorer/Dev/ices_cat_3_template", "testRepo"))
+    HTML(create_interactive_tree("D:/GitHub_2023/tafXplorer/App/Data/ices_cat_3_template", "testRepo"))
   })
 
   TAFStatistics <- reactive({
