@@ -52,7 +52,7 @@ create_interactive_tree <- function(path, repo) {
   output$filename <- basename(output$pathString)
   # output$filename <- paste0("`r shiny::icon('markdown')` ", output$filename)
 
-  output$urlString <- paste0("https://ices-taf.shinyapps.io/tafexplorer?pathstring=", output$pathString, "&repo=", repo)
+  output$urlString <- paste0("https://ices-taf.shinyapps.io/tafxplorer/?Assessmentresults?pathstring=", output$pathString, "&repo=", repo)
 
   # could be handy for file icons
   FileFormats <- tools::file_ext(output$filename)
@@ -83,8 +83,8 @@ create_interactive_tree <- function(path, repo) {
 }
 
 
-path <- "D:/GitHub_2023/tafXplorer/App/Data/ices_cat_3_template"
-repo <- "testRepo"
+# path <- "D:/GitHub_2023/tafXplorer/App/Data/ices_cat_3_template"
+# repo <- "testRepo"
 
 
 

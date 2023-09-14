@@ -1037,3 +1037,78 @@ server <- function(input, output, session) {
 }
 
 shinyApp(ui, server)
+
+
+
+
+library(shiny)
+
+ui <- fluidPage(
+        htmlOutput("markup"),
+        textOutput("clicked_text"),
+        includeScript("D:/GitHub_2023/tafXplorer/Dev/detect_click.js")
+)
+
+# sample data
+data <- c("This", "is", "a", "sentence")
+
+# function to markup text
+markup.text <- function(data) {
+        markup <- lapply(data, function(text) {
+                paste0("<a href='#' onclick='detect_click(this)'>text</a>")
+                       
+        }) %>%
+                paste(collapse = " ")
+        return(markup)
+}
+
+server <- function(input, output) {
+
+        output$markup <- renderUI({ # display the marked-up text
+                HTML(markup.text(c("This", "is", "a", "sentence")))
+                })
+        output$clicked_text <- eventReactive(input$clicked_text, { # display clicked text output
+                print(input$clicked_text)
+        })
+}
+
+shinyApp(ui = ui, server = server)
+
+
+
+
+#####################################good example to follow
+library(shiny)
+
+ui <- fluidPage(
+  
+  tags$script(HTML(
+    "$(document).ready(function(){
+  $('body').on('click', 'a', function(evt){
+    Shiny.setInputValue('clicked_text', evt.target.id);
+  });
+})"
+  )),
+  
+  tags$a(href = "#", id = 1, "id is 1"),
+  br(),
+  tags$a(href = "#", id = 2, "id is 2"),
+  br(),
+  tags$a(href = "#", id = 3, "id is 3"),
+  
+  br(),
+  tags$a(href = "#", id = 4, "id is 4, javascript function should be suppressed for this link"),
+  br(),
+  tags$a(href = "#", id = 5, "id is 5, javascript function should be suppressed for this link"),
+  
+  textOutput("clicked_text"),
+)
+
+server <- function(input, output) {
+  
+  output$clicked_text <- eventReactive(input$clicked_text, {
+    if(input$clicked_text %in% 1:3) input$clicked_text
+  })
+}
+
+shinyApp(ui = ui, server = server)

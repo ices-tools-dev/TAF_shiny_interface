@@ -150,9 +150,12 @@ server <- function(input, output, session) {
   })
 
   output$img <- renderUI({
-      tags$img(src = "https://www.r-project.org/logo/Rlogo.png")
+      tags$img(src = "https://taf.ices.dk/fs/ices_cat_3_template/report/figures/rfb_Lc.png")
   })
-  
+  output$clicked_text <- eventReactive(input$clicked_text, { # display clicked text output
+                print(input$clicked_text)
+        })
+
   TAFStatistics <- reactive({
     TAFStats <- getTAFStocksStatistics()
   })

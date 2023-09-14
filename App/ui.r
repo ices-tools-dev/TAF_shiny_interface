@@ -84,6 +84,7 @@ tagList(
     introjsUI(),
     tags$script(src = "https://kit.fontawesome.com/ac71e9cf8e.js"),
     tags$script(src = "app.js"),
+    tags$script(src = "detect_click.js"),
     tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "styles.css")),
     tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "AdminLTE.css")),
     tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "shinydashboard.css")),
