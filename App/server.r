@@ -149,12 +149,13 @@ server <- function(input, output, session) {
     HTML(create_interactive_tree("D:/GitHub_2023/tafXplorer/App/Data/ices_cat_3_template", "testRepo"))
   })
 
-  output$img <- renderUI({
-      tags$img(src = "https://taf.ices.dk/fs/ices_cat_3_template/report/figures/rfb_Lc.png")
+  output$clicked_text <- eventReactive(input$clicked_text, {
+   print(input$clicked_text)
   })
-  output$clicked_text <- eventReactive(input$clicked_text, { # display clicked text output
-                print(input$clicked_text)
-        })
+  # output$img <- renderUI({
+  #     tags$img(src = "https://taf.ices.dk/fs/ices_cat_3_template/report/figures/rfb_Lc.png")
+  # })
+
 
   TAFStatistics <- reactive({
     TAFStats <- getTAFStocksStatistics()

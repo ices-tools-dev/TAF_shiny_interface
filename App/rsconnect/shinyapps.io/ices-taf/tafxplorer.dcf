@@ -1,0 +1,10 @@
+name: tafxplorer
+title: tafxplorer
+username: ices-taf
+account: ices-taf
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 9838493
+bundleId: 7683644
+url: https://ices-taf.shinyapps.io/tafxplorer/
+version: 1

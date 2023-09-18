@@ -63,8 +63,10 @@ create_interactive_tree <- function(path, repo) {
       paste(rep("  ", output$level[i] - 1), collapse = ""),
       "* ",
        sapply(FileFormats[i], get_icon), 
-      " [", output$filename[i], "]",
-      "(", output$urlString[i], ")"
+       " ",
+       tags$a(href = "#", id = i, output$filename[i])
+      # " [", output$filename[i], "]",
+      # "(", output$urlString[i], ")"
     )
   }
 
@@ -85,7 +87,7 @@ create_interactive_tree <- function(path, repo) {
 
 # path <- "D:/GitHub_2023/tafXplorer/App/Data/ices_cat_3_template"
 # repo <- "testRepo"
-
+# HTML(create_interactive_tree(path, repo))
 
 
 
