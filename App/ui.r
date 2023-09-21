@@ -179,11 +179,12 @@ tagList(
             sidebarLayout(
                 sidebarPanel(
                     width = 4,
-                    style = "height: fit-content; width: fit-content; overflow-y: hidden; white-space: normal;",
+                    style = "height: fit-content; width: fit-content; white-space: normal;",
                     htmlOutput(outputId = "html_tree", inline = FALSE)
                 ),
                 mainPanel(
-                    width = 8,                    
+                    width = 8,
+                    style = "overflow-y: auto; white-space: normal;",               
                     verbatimTextOutput(outputId ="clicked_text"),
                     htmlOutput(outputId = "file_viz")             
                 )

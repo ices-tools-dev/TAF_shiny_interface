@@ -37,14 +37,16 @@ get_icon <- function(text) {
 }
 
 
-CreateInteractiveTreeDF <- function(path, repo) {
-  paths <- list.files(path,
-    recursive = TRUE, full.names = TRUE,
-    include.dirs = TRUE
-  )
+CreateInteractiveTreeDF <- function(repo) {
+  # paths <- list.files(jsonlite::read_json("https://adminweb06.ices.dk/api/dir/ices_cat_3_template", simplifyVector = TRUE),
+  #   recursive = TRUE, full.names = TRUE,
+  #   include.dirs = TRUE
+  # )
+
+  paths <-jsonlite::read_json(paste0("https://adminweb06.ices.dk/api/dir/",repo), simplifyVector = TRUE)
   # print(paths)
   # to clean off initial path -  will not need this in production
-  paths <- gsub("./Data/", "", paths)
+  # paths <- gsub("./Data/", "", paths)
 
   tree <- as.Node(data.frame(pathString = paths))
 
@@ -53,7 +55,7 @@ CreateInteractiveTreeDF <- function(path, repo) {
   # output$filename <- paste0("`r shiny::icon('markdown')` ", output$filename)
 
   output$urlString <- paste0("https://ices-taf.shinyapps.io/tafxplorer/?Assessmentresults?pathstring=", output$pathString, "&repo=", repo)
-  output$ServerUrlString <- paste0("https://taf.ices.dk/fs/", output$pathString)
+  output$ServerUrlString <- paste0("https://adminweb06.ices.dk/api/blob/", output$pathString)
   # could be handy for file icons
   output$FileFormats <- tools::file_ext(output$filename)
 
@@ -85,7 +87,8 @@ CreateInteractiveTreeHTML <- function(output){
 
 
 # path <- "./Data/ices_cat_3_template"
-# repo <- "testRepo"
+# repo <- "ices_cat_3_template"
+# CreateInteractiveTreeDF(repo)
 # CreateInteractiveTreeHTML(CreateInteractiveTreeDF(path, repo))
 
 # HTML(create_interactive_tree(path, repo))

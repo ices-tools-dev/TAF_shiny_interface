@@ -1186,3 +1186,65 @@ create_interactive_tree <- function(path, repo) {
 path <- "D:/GitHub_2023/tafXplorer/App/Data/ices_cat_3_template"
 repo <- "testRepo"
 HTML(create_interactive_tree(path, repo))
+
+
+
+
+library(shiny)
+library(shinyjs)
+
+ui <- fluidPage(
+  useShinyjs(),
+  titlePanel("File Viewer"),
+  sidebarLayout(
+    sidebarPanel(
+      textInput("urlInput", "Enter URL:", ""),
+      selectInput("fileType", "Select File Type:", choices = c("CSV", "PNG")),
+      actionButton("loadButton", "Load File"),
+      downloadButton("downloadCSV", "Download CSV")
+    ),
+    mainPanel(
+      uiOutput("fileViewer")
+    )
+  )
+)
+
+server <- function(input, output, session) {
+  observeEvent(input$loadButton, {
+    # Check if a valid URL is provided
+    if (!grepl("^https?://", input$urlInput)) {
+      shinyjs::alert("Please enter a valid URL starting with http:// or https://.")
+      return()
+    }
+
+    # Download the file from the URL
+    file_extension <- tolower(tools::file_ext(input$urlInput))
+    if (file_extension == "csv" && input$fileType == "CSV") {
+      data <- read.csv(input$urlInput)
+      output$fileViewer <- renderTable({
+        data
+      })
+      output$downloadCSV <- downloadHandler(
+        filename = function() {
+          paste("downloaded_data.csv")
+        },
+        content = function(file) {
+          write.csv(data, file)
+        }
+      )
+    } else if (file_extension == "png" && input$fileType == "PNG") {
+      output$fileViewer <- renderText({c('<img src="',input$urlInput,'">')})
+      # output$fileViewer <- renderImage({
+      #   list(src = input$urlInput, contentType = "image/png")
+      # }, deleteFile = FALSE)
+    } else {
+      shinyjs::alert("Invalid file type or file format.")
+    }
+  })
+}
+
+shinyApp(ui, server)
+library("tools")
+file_ext("https://adminweb06.ices.dk/api/blob/2015_had-iceg/report/biomass.png")
+
+jsonlite::read_json("https://adminweb06.ices.dk/api/dir/ices_cat_3_template", simplifyVector = TRUE)
