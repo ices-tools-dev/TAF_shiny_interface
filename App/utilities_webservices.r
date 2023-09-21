@@ -24,7 +24,7 @@ get_icon <- function(text) {
     x <- paste(shiny::icon('file-csv'))
   } else if (text == "png") {
     x <- paste(shiny::icon('file-image'))
-  } else if (text == "rds") {
+  } else if (text == "rds" | text == "R" | text == "r") {
     x <- paste(shiny::icon('r-project'))
   } else if (text == "txt") {
     x <- paste(shiny::icon('code'))
@@ -37,14 +37,14 @@ get_icon <- function(text) {
 }
 
 
-create_interactive_tree <- function(path, repo) {
+CreateInteractiveTreeDF <- function(path, repo) {
   paths <- list.files(path,
     recursive = TRUE, full.names = TRUE,
     include.dirs = TRUE
   )
-
+  # print(paths)
   # to clean off initial path -  will not need this in production
-  paths <- gsub("D:/GitHub_2023/tafXplorer/App/Data/ices_cat_3_template", "", paths)
+  paths <- gsub("./Data/", "", paths)
 
   tree <- as.Node(data.frame(pathString = paths))
 
@@ -53,20 +53,23 @@ create_interactive_tree <- function(path, repo) {
   # output$filename <- paste0("`r shiny::icon('markdown')` ", output$filename)
 
   output$urlString <- paste0("https://ices-taf.shinyapps.io/tafxplorer/?Assessmentresults?pathstring=", output$pathString, "&repo=", repo)
-
+  output$ServerUrlString <- paste0("https://taf.ices.dk/fs/", output$pathString)
   # could be handy for file icons
-  FileFormats <- tools::file_ext(output$filename)
+  output$FileFormats <- tools::file_ext(output$filename)
 
+  return(output)
+}
 
+CreateInteractiveTreeHTML <- function(output){
+  
   makeOne <- function(i) {
     paste0(
       paste(rep("  ", output$level[i] - 1), collapse = ""),
       "* ",
-       sapply(FileFormats[i], get_icon), 
+       sapply( output$FileFormats[i], get_icon), 
        " ",
        tags$a(href = "#", id = i, output$filename[i])
-      # " [", output$filename[i], "]",
-      # "(", output$urlString[i], ")"
+      
     )
   }
 
@@ -74,19 +77,17 @@ create_interactive_tree <- function(path, repo) {
     sapply(1:nrow(output), makeOne),
     collapse = "\n"
   )
-
-
   # cat(all)
-
-
   html <- markdown::mark(text = all)
 
   return(html)
 }
 
 
-# path <- "D:/GitHub_2023/tafXplorer/App/Data/ices_cat_3_template"
+# path <- "./Data/ices_cat_3_template"
 # repo <- "testRepo"
+# CreateInteractiveTreeHTML(CreateInteractiveTreeDF(path, repo))
+
 # HTML(create_interactive_tree(path, repo))
 
 

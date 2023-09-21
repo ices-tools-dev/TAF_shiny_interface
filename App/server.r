@@ -145,16 +145,32 @@ server <- function(input, output, session) {
     paste('Repo name:', paste0(input$repo_year, "_", input$stock_code, "_", input$repo_type))
   })
 
-  output$html_tree <- reactive({
-    HTML(create_interactive_tree("D:/GitHub_2023/tafXplorer/App/Data/ices_cat_3_template", "testRepo"))
+  html_treeDF <- reactive({
+    # HTML(create_interactive_tree("./Data/ices_cat_3_template", "testRepo"))
+    CreateInteractiveTreeDF("./Data/ices_cat_3_template", "testRepo")
   })
+
+  output$html_tree <- renderUI({
+      # HTML(create_interactive_tree("./Data/ices_cat_3_template", "testRepo"))
+      HTML(CreateInteractiveTreeHTML(html_treeDF()))
+    })
 
   output$clicked_text <- eventReactive(input$clicked_text, {
    print(input$clicked_text)
   })
-  # output$img <- renderUI({
-  #     tags$img(src = "https://taf.ices.dk/fs/ices_cat_3_template/report/figures/rfb_Lc.png")
-  # })
+  
+  output$file_viz <- renderTable({ ### this now works only for csv files
+    validate(
+      need(input$clicked_text != "", "No file selected")
+    )
+    fileURL <- html_treeDF()$ServerUrlString[as.numeric(input$clicked_text)]
+    # fileToDisplay <- getURL(fileURL)
+    if (html_treeDF()$FileFormats[as.numeric(input$clicked_text)] == "csv") {
+      fileToDisplay <- read.table(fileURL, sep = ",", header = TRUE)
+    } else {
+      print(getURL(fileURL))
+    }
+  })
 
 
   TAFStatistics <- reactive({

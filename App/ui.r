@@ -178,12 +178,14 @@ tagList(
                     ),
             sidebarLayout(
                 sidebarPanel(
-                    width = 3,
-                    htmlOutput(outputId = "html_tree", inline = FALSE, class="tree")
+                    width = 4,
+                    style = "height: fit-content; width: fit-content; overflow-y: hidden; white-space: normal;",
+                    htmlOutput(outputId = "html_tree", inline = FALSE)
                 ),
                 mainPanel(
-                    width = 9,                    
-                    verbatimTextOutput(outputId ="clicked_text")                
+                    width = 8,                    
+                    verbatimTextOutput(outputId ="clicked_text"),
+                    htmlOutput(outputId = "file_viz")             
                 )
             ),
         ),
