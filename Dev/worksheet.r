@@ -1307,3 +1307,5 @@ shinyApp(ui = ui, server = server)
 
 getAceModes()
 getAceThemes()
+basename(stocklist$gitHubUrl)
+jsonlite::read_json(paste0("https://adminweb06.ices.dk/api/dir/","2022_cod.27.47d20_assessment"), simplifyVector = TRUE)
