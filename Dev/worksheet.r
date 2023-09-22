@@ -1248,3 +1248,62 @@ library("tools")
 file_ext("https://adminweb06.ices.dk/api/blob/2015_had-iceg/report/biomass.png")
 
 jsonlite::read_json("https://adminweb06.ices.dk/api/dir/ices_cat_3_template", simplifyVector = TRUE)
+
+
+rmarkdown::knitr_options_html()
+
+
+
+########################
+
+library(shiny)
+library(shinyAce)
+
+ui <- fluidPage(
+  titlePanel("R Code with Syntax Highlighting"),
+  
+  sidebarLayout(
+    sidebarPanel(
+      # No sidebar content needed for this example
+    ),
+    
+    mainPanel(
+      aceEditor(
+        outputId = "code",
+        value = "### ------------------------------------------------------------------------ ###
+### Apply rfb rule ####
+### ------------------------------------------------------------------------ ###
+
+## Before: data/idx.csv
+##         data/advice_history.csv
+##         data/length_data.rds
+## After:  model/advice.rds
+
+library(TAF)
+library(cat3advice)
+library(dplyr)
+
+mkdir(\'model\')
+
+### ------------------------------------------------------------------------ ###
+### load data ####
+### ------------------------------------------------------------------------ ###",
+        mode = "r",
+        theme = "github",
+        fontSize = 14,
+        height = "500px",
+        readOnly = TRUE
+      )
+    )
+  )
+)
+
+server <- function(input, output) {
+  # No server logic needed for this example
+}
+
+shinyApp(ui = ui, server = server)
+
+
+getAceModes()
+getAceThemes()

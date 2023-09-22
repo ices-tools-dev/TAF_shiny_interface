@@ -94,5 +94,3 @@ CreateInteractiveTreeHTML <- function(output){
 # HTML(create_interactive_tree(path, repo))
 
 
-
-

@@ -149,28 +149,119 @@ server <- function(input, output, session) {
     # HTML(create_interactive_tree("./Data/ices_cat_3_template", "testRepo"))
     CreateInteractiveTreeDF(repo = "ices_cat_3_template")
   })
-
+  
   output$html_tree <- renderUI({
       # HTML(create_interactive_tree("./Data/ices_cat_3_template", "testRepo"))
       HTML(CreateInteractiveTreeHTML(html_treeDF()))
     })
 
-  output$clicked_text <- eventReactive(input$clicked_text, {
-   print(input$clicked_text)
-  })
-  
-  output$file_viz <- renderTable({ ### this now works only for csv files
+  # output$clicked_text <- eventReactive(input$clicked_text, {
+  #  print(input$clicked_text)
+  # })
+  #########################################################################
+  observeEvent(input$clicked_text, {
+
     validate(
       need(input$clicked_text != "", "No file selected")
     )
+    # Check if a valid URL is provided
+    # if (!grepl("^https?://", input$urlInput)) {
+    #   shinyjs::alert("Please enter a valid URL starting with http:// or https://.")
+    #   return()
+    # }
+
+    # Download the file from the URL
+    file_extension <- tolower(tools::file_ext(html_treeDF()$ServerUrlString[as.numeric(input$clicked_text)]))
+    # print(file_extension)
     fileURL <- html_treeDF()$ServerUrlString[as.numeric(input$clicked_text)]
-    # fileToDisplay <- getURL(fileURL)
-    if (html_treeDF()$FileFormats[as.numeric(input$clicked_text)] == "csv") {
-      fileToDisplay <- read.table(fileURL, sep = ",", header = TRUE)
+
+    if (file_extension == "csv") {
+      # data <- read.table(fileURL, sep = ",", header = TRUE)
+      
+      output$file_viz <- renderTable({
+        fileToDisplay <- read.table(fileURL, sep = ",", header = TRUE)
+      })
+      # output$downloadCSV <- downloadHandler(
+      #   filename = function() {
+      #     paste("downloaded_data.csv")
+      #   },
+      #   content = function(file) {
+      #     write.csv(data, file)
+      #   }
+      # )
+    } else if (file_extension == "png") {
+
+      output$file_viz <- renderText({c('<img src="', fileURL,'">')})
+      # output$fileViewer <- renderImage({
+      #   list(src = input$urlInput, contentType = "image/png")
+      # }, deleteFile = FALSE)
+    } else if (file_extension == "bib") {
+
+      output$file_viz <- renderUI({
+        fileToDisplay <- getURL(fileURL)
+        # html_text <- gsub("\r\n", "</br>", fileToDisplay)
+        # HTML(html_text)
+
+        aceEditor(
+        outputId = "code_bib",
+        value = fileToDisplay,
+        mode = "yaml",
+        theme = "clouds_midnight",
+        fontSize = 14,
+        height = "1000px",
+        readOnly = TRUE
+      )
+      })
+     
+    } else if (file_extension == "r") {
+
+      output$file_viz <- renderUI({
+        fileToDisplay <- getURL(fileURL)
+        # print(fileToDisplay)
+        # html_text <- gsub("\r\n", "</br>", fileToDisplay)
+        # HTML(html_text)
+        # HTML(paste("<pre><code>", html_text, "</code></pre>"))
+
+
+        aceEditor(
+        outputId = "code",
+        value = fileToDisplay,
+        mode = "r",
+        theme = "chrome",
+        fontSize = 14,
+        height = "1000px",
+        readOnly = TRUE
+      )
+      })
+     
+    } else if (file_extension == "rmd") {
+
+      output$file_viz <- renderUI({
+        fileToDisplay <- getURL(fileURL)
+        rmarkdown::render(fileToDisplay)
+        # print(fileToDisplay)
+        # html_text <- gsub("\r\n", "</br>", fileToDisplay)
+        # HTML(html_text)
+      })
+     
     } else {
-      print(getURL(fileURL))
+      shinyjs::alert("Invalid file type or file format.")
     }
+
   })
+  #########################################################################
+  # output$file_viz <- renderTable({ ### this now works only for csv files
+  #   validate(
+  #     need(input$clicked_text != "", "No file selected")
+  #   )
+  #   fileURL <- html_treeDF()$ServerUrlString[as.numeric(input$clicked_text)]
+  #   # fileToDisplay <- getURL(fileURL)
+  #   if (html_treeDF()$FileFormats[as.numeric(input$clicked_text)] == "csv") {
+  #     fileToDisplay <- read.table(fileURL, sep = ",", header = TRUE)
+  #   } else {
+  #     print(getURL(fileURL))
+  #   }
+  # })
 
 
 

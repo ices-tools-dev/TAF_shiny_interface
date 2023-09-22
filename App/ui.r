@@ -185,8 +185,8 @@ tagList(
                 mainPanel(
                     width = 8,
                     style = "overflow-y: auto; white-space: normal;",               
-                    verbatimTextOutput(outputId ="clicked_text"),
-                    htmlOutput(outputId = "file_viz")             
+                    # verbatimTextOutput(outputId ="clicked_text"),
+                    uiOutput(outputId = "file_viz")             
                 )
             ),
         ),
