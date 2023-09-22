@@ -1,0 +1,103 @@
+--------------------------------------------------------------------------------
+Previous catch advice Ay (advised catch for 1987) |                   1742 tonnes
+ --------------------------------------------------------------------------------
+Previous catch advice Ay (advised catch for 1988) |                   1742 tonnes
+ --------------------------------------------------------------------------------
+Previous catch advice Ay (advised catch for 1989) |                   1742 tonnes
+ --------------------------------------------------------------------------------
+Previous catch advice Ay (advised catch for 1990) |                   1742 tonnes
+ --------------------------------------------------------------------------------
+Previous catch advice Ay (advised catch for 1991) |                   1742 tonnes
+ --------------------------------------------------------------------------------
+Previous catch advice Ay (advised catch for 1992) |                   1742 tonnes
+ --------------------------------------------------------------------------------
+Previous catch advice Ay (advised catch for 1993) |                   1742 tonnes
+ --------------------------------------------------------------------------------
+Previous catch advice Ay (advised catch for 1994) |                   1742 tonnes
+ --------------------------------------------------------------------------------
+Previous catch advice Ay (advised catch for 1995) |                   1742 tonnes
+ --------------------------------------------------------------------------------
+Previous catch advice Ay (advised catch for 1996) |                   1742 tonnes
+ --------------------------------------------------------------------------------
+Previous catch advice Ay (advised catch for 1997) |                   1742 tonnes
+ --------------------------------------------------------------------------------
+Previous catch advice Ay (advised catch for 1998) |                   1742 tonnes
+ --------------------------------------------------------------------------------
+Previous catch advice Ay (advised catch for 1999) |                   1742 tonnes
+ --------------------------------------------------------------------------------
+Previous catch advice Ay (advised catch for 2000) |                   1742 tonnes
+ --------------------------------------------------------------------------------
+Previous catch advice Ay (advised catch for 2001) |                   1742 tonnes
+ --------------------------------------------------------------------------------
+Previous catch advice Ay (advised catch for 2002) |                   1742 tonnes
+ --------------------------------------------------------------------------------
+Previous catch advice Ay (advised catch for 2003) |                   1742 tonnes
+ --------------------------------------------------------------------------------
+Previous catch advice Ay (advised catch for 2004) |                   1742 tonnes
+ --------------------------------------------------------------------------------
+Previous catch advice Ay (advised catch for 2005) |                   1742 tonnes
+ --------------------------------------------------------------------------------
+Previous catch advice Ay (advised catch for 2006) |                   1742 tonnes
+ --------------------------------------------------------------------------------
+Previous catch advice Ay (advised catch for 2007) |                   1742 tonnes
+ --------------------------------------------------------------------------------
+Previous catch advice Ay (advised catch for 2008) |                   1742 tonnes
+ --------------------------------------------------------------------------------
+Previous catch advice Ay (advised catch for 2009) |                   1742 tonnes
+ --------------------------------------------------------------------------------
+Previous catch advice Ay (advised catch for 2010) |                   1742 tonnes
+ --------------------------------------------------------------------------------
+Previous catch advice Ay (advised catch for 2011) |                   1742 tonnes
+ --------------------------------------------------------------------------------
+Previous catch advice Ay (advised catch for 2012) |                   1742 tonnes
+ --------------------------------------------------------------------------------
+Previous catch advice Ay (advised catch for 2013) |                   1742 tonnes
+ --------------------------------------------------------------------------------
+Previous catch advice Ay (advised catch for 2014) |                   1742 tonnes
+ --------------------------------------------------------------------------------
+Previous catch advice Ay (advised catch for 2015) |                   1742 tonnes
+ --------------------------------------------------------------------------------
+Previous catch advice Ay (advised catch for 2016) |                   1742 tonnes
+ --------------------------------------------------------------------------------
+Previous catch advice Ay (advised catch for 2017) |                   1742 tonnes
+ --------------------------------------------------------------------------------
+Previous catch advice Ay (advised catch for 2018) |                   1742 tonnes
+ --------------------------------------------------------------------------------
+Previous catch advice Ay (advised catch for 2019) |                   1742 tonnes
+ --------------------------------------------------------------------------------
+Previous catch advice Ay (advised catch for 2020) |                   1742 tonnes
+ --------------------------------------------------------------------------------
+Previous catch advice Ay (advised catch for 2021) |                   1742 tonnes
+--------------------------------------------------------------------------------
+Stock biomass trend
+--------------------------------------------------------------------------------
+Index A (2020,2021)                              |                    0.81 kg/hr
+Index B (2017,2018,2019)                         |                    1.10 kg/hr
+r: stock biomass trend (index ratio A/B)         |                          0.74
+--------------------------------------------------------------------------------
+Fishing pressure proxy
+--------------------------------------------------------------------------------
+Mean catch length (Lmean = L2021)                |                        320 mm
+MSY proxy length (LF=M)                          |                        340 mm
+f: Fishing pressure proxy relative to MSY proxy  | 
+   (L2021/LF=M)                                  |                          0.94
+--------------------------------------------------------------------------------
+Biomass safeguard
+--------------------------------------------------------------------------------
+Last index value (I2021)                         |                    1.03 kg/hr
+Index trigger value (Itrigger = Iloss x 1.4)     |                    0.39 kg/hr
+b: index relative to trigger value,              |                          1.00
+   min{I2021/Itrigger, 1}                        |                              
+--------------------------------------------------------------------------------
+Precautionary multiplier to maintain biomass above Blim with 95% probability
+--------------------------------------------------------------------------------
+m: multiplier                                    |                          0.95
+   (generic multiplier based on life history)    |                              
+RFB calculation (r*f*b*m)                        |                   1144 tonnes
+Stability clause (+20%/-30% compared to Ay,      | 
+   only applied if b=1)                          |       Applied |           0.7
+Catch advice for 2022 and 2023                   | 
+   (Ay * stability clause)                       |                   1219 tonnes
+Discard rate                                     |                           27%
+Projected landings corresponding to advice       |                    894 tonnes
+% advice change                                  |                          -30%

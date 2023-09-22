@@ -49,7 +49,7 @@ EGStatsPlot <- function(EGStatistic) {
                                 smoothing = .9, 
                                 width = 4), 
                     marker = list(size = 8)) %>%
-        layout(xaxis = list(title = "")) %>%
+        layout(xaxis = list(title = "Year")) %>%
         highlight(on = "plotly_hover", 
                     selected = attrs_selected(showlegend = FALSE))
 

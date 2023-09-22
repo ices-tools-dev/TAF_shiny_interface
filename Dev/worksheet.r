@@ -1020,3 +1020,292 @@ library(rhdf5)
 BiocManager::install("rhdf5")
 h5f = h5read("D:/GitHub_2023/tafXplorer/App/Sample.h5","df")
 h5f = H5Fopen("D:/GitHub_2023/tafXplorer/App/Sample.h5")
+
+
+
+library(shiny)
+
+ui <- fluidPage(
+  h4("Embedded image"),
+  uiOutput("img")
+)
+
+server <- function(input, output, session) {
+  output$img <- renderUI({
+      tags$img(src = "https://www.r-project.org/logo/Rlogo.png")
+  })
+}
+
+shinyApp(ui, server)
+
+
+
+
+library(shiny)
+
+ui <- fluidPage(
+        htmlOutput("markup"),
+        textOutput("clicked_text"),
+        includeScript("D:/GitHub_2023/tafXplorer/Dev/detect_click.js")
+)
+
+# sample data
+data <- c("This", "is", "a", "sentence")
+
+# function to markup text
+markup.text <- function(data) {
+        markup <- lapply(data, function(text) {
+                paste0("<a href='#' onclick='detect_click(this)'>text</a>")
+                       
+        }) %>%
+                paste(collapse = " ")
+        return(markup)
+}
+
+server <- function(input, output) {
+
+        output$markup <- renderUI({ # display the marked-up text
+                HTML(markup.text(c("This", "is", "a", "sentence")))
+                })
+        output$clicked_text <- eventReactive(input$clicked_text, { # display clicked text output
+                print(input$clicked_text)
+        })
+}
+
+shinyApp(ui = ui, server = server)
+
+
+
+
+#####################################good example to follow
+library(shiny)
+
+ui <- fluidPage(
+  
+  tags$script(HTML(
+    "$(document).ready(function(){
+  $('body').on('click', 'a', function(evt){
+    Shiny.setInputValue('clicked_text', evt.target.id);
+  });
+})"
+  )),
+  
+  tags$a(href = "#", id = 1, "id is 1"),
+  br(),
+  tags$a(href = "#", id = 2, "id is 2"),
+  br(),
+  tags$a(href = "#", id = 3, "id is 3"),
+  
+  br(),
+  tags$a(href = "#", id = 4, "id is 4, javascript function should be suppressed for this link"),
+  br(),
+  tags$a(href = "#", id = 5, "id is 5, javascript function should be suppressed for this link"),
+  
+  textOutput("clicked_text"),
+)
+
+server <- function(input, output) {
+  
+  output$clicked_text <- eventReactive(input$clicked_text, {
+    if(input$clicked_text %in% 1:3) input$clicked_text
+  })
+}
+
+shinyApp(ui = ui, server = server)
+
+
+
+
+get_icon <- function(text) {
+  if (nchar(text) == 0) {
+    x <- paste(shiny::icon("folder-open"))
+  } else if (text == "csv") {
+    x <- paste(shiny::icon('file-csv'))
+  } else if (text == "png") {
+    x <- paste(shiny::icon('file-image'))
+  } else if (text == "rds") {
+    x <- paste(shiny::icon('r-project'))
+  } else if (text == "txt") {
+    x <- paste(shiny::icon('code'))
+  } else if (text == "bib") {
+    x <- paste(shiny::icon('book'))
+  } else{
+    x <- ""
+  }
+  return(x)
+}
+
+
+create_interactive_tree <- function(path, repo) {
+  paths <- list.files(path,
+    recursive = TRUE, full.names = TRUE,
+    include.dirs = TRUE
+  )
+
+  # to clean off initial path -  will not need this in production
+  paths <- gsub("D:/GitHub_2023/tafXplorer/App/Data/ices_cat_3_template", "", paths)
+
+  tree <- as.Node(data.frame(pathString = paths))
+
+  output <- ToDataFrameTree(tree, "pathString", "isLeaf", "level")
+  output$filename <- basename(output$pathString)
+  # output$filename <- paste0("`r shiny::icon('markdown')` ", output$filename)
+
+  output$urlString <- paste0("https://ices-taf.shinyapps.io/tafxplorer/?Assessmentresults?pathstring=", output$pathString, "&repo=", repo)
+
+  # could be handy for file icons
+  FileFormats <- tools::file_ext(output$filename)
+
+
+  makeOne <- function(i) {
+    paste0(
+      paste(rep("  ", output$level[i] - 1), collapse = ""),
+      "* ",
+       sapply(FileFormats[i], get_icon), 
+       tags$a(href = "#", id = output$filename[i], output$filename[i])
+      # " [", output$filename[i], "]",
+      # "(", "href= '#' ", "id=", output$filename[i], ")"
+    )
+  }
+
+  all <- paste(
+    sapply(1:nrow(output), makeOne),
+    collapse = "\n"
+  )
+
+
+  cat(all)
+
+
+  html <- markdown::mark(text = all)
+
+  return(html)
+}
+
+
+path <- "D:/GitHub_2023/tafXplorer/App/Data/ices_cat_3_template"
+repo <- "testRepo"
+HTML(create_interactive_tree(path, repo))
+
+
+
+
+library(shiny)
+library(shinyjs)
+
+ui <- fluidPage(
+  useShinyjs(),
+  titlePanel("File Viewer"),
+  sidebarLayout(
+    sidebarPanel(
+      textInput("urlInput", "Enter URL:", ""),
+      selectInput("fileType", "Select File Type:", choices = c("CSV", "PNG")),
+      actionButton("loadButton", "Load File"),
+      downloadButton("downloadCSV", "Download CSV")
+    ),
+    mainPanel(
+      uiOutput("fileViewer")
+    )
+  )
+)
+
+server <- function(input, output, session) {
+  observeEvent(input$loadButton, {
+    # Check if a valid URL is provided
+    if (!grepl("^https?://", input$urlInput)) {
+      shinyjs::alert("Please enter a valid URL starting with http:// or https://.")
+      return()
+    }
+
+    # Download the file from the URL
+    file_extension <- tolower(tools::file_ext(input$urlInput))
+    if (file_extension == "csv" && input$fileType == "CSV") {
+      data <- read.csv(input$urlInput)
+      output$fileViewer <- renderTable({
+        data
+      })
+      output$downloadCSV <- downloadHandler(
+        filename = function() {
+          paste("downloaded_data.csv")
+        },
+        content = function(file) {
+          write.csv(data, file)
+        }
+      )
+    } else if (file_extension == "png" && input$fileType == "PNG") {
+      output$fileViewer <- renderText({c('<img src="',input$urlInput,'">')})
+      # output$fileViewer <- renderImage({
+      #   list(src = input$urlInput, contentType = "image/png")
+      # }, deleteFile = FALSE)
+    } else {
+      shinyjs::alert("Invalid file type or file format.")
+    }
+  })
+}
+
+shinyApp(ui, server)
+library("tools")
+file_ext("https://adminweb06.ices.dk/api/blob/2015_had-iceg/report/biomass.png")
+
+jsonlite::read_json("https://adminweb06.ices.dk/api/dir/ices_cat_3_template", simplifyVector = TRUE)
+
+
+rmarkdown::knitr_options_html()
+
+
+
+########################
+
+library(shiny)
+library(shinyAce)
+
+ui <- fluidPage(
+  titlePanel("R Code with Syntax Highlighting"),
+  
+  sidebarLayout(
+    sidebarPanel(
+      # No sidebar content needed for this example
+    ),
+    
+    mainPanel(
+      aceEditor(
+        outputId = "code",
+        value = "### ------------------------------------------------------------------------ ###
+### Apply rfb rule ####
+### ------------------------------------------------------------------------ ###
+
+## Before: data/idx.csv
+##         data/advice_history.csv
+##         data/length_data.rds
+## After:  model/advice.rds
+
+library(TAF)
+library(cat3advice)
+library(dplyr)
+
+mkdir(\'model\')
+
+### ------------------------------------------------------------------------ ###
+### load data ####
+### ------------------------------------------------------------------------ ###",
+        mode = "r",
+        theme = "github",
+        fontSize = 14,
+        height = "500px",
+        readOnly = TRUE
+      )
+    )
+  )
+)
+
+server <- function(input, output) {
+  # No server logic needed for this example
+}
+
+shinyApp(ui = ui, server = server)
+
+
+getAceModes()
+getAceThemes()
+basename(stocklist$gitHubUrl)
+jsonlite::read_json(paste0("https://adminweb06.ices.dk/api/dir/","2022_cod.27.47d20_assessment"), simplifyVector = TRUE)

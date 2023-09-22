@@ -36,7 +36,7 @@ library(tidyverse)
 library(tm)
 library(widgetframe)
 library(icesASD)
-library(mixfishtools)
+# library(mixfishtools)
 library(shiny)
 library(shinyWidgets)
 library(mapplots)
@@ -48,6 +48,8 @@ library(sf)
 library(shinyjs)
 library(reshape2)
 library(shinydashboard)
+library(data.tree)
+library(shinyAce)
 
 
 
@@ -83,6 +85,7 @@ tagList(
     introjsUI(),
     tags$script(src = "https://kit.fontawesome.com/ac71e9cf8e.js"),
     tags$script(src = "app.js"),
+    tags$script(src = "detect_click2.js"),
     tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "styles.css")),
     tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "AdminLTE.css")),
     tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "shinydashboard.css")),
@@ -136,16 +139,7 @@ tagList(
         ),
         tabPanel(
             "Assessment results",
-            sidebarLayout(
-                sidebarPanel(
-                    width = 9,
-                    verbatimTextOutput(outputId = "folder_tree"),
-                    htmlOutput(outputId = "html_tree", inline = FALSE)
-                ),
-                mainPanel(
-                    width = 3,                    
-                    # style = "float: left;",
-                    box(
+            box(
                         selectizeInput(
                             inputId = "repo_year",
                             label = "Assessment Year",
@@ -176,13 +170,24 @@ tagList(
                         verbatimTextOutput(outputId = "repo_string"),
                         actionBttn(inputId = "create_repo", label = "Create Repo", style = "simple", size = "sm", color = "warning"),
                         
-                        width = "100%",
+                        width = "30%",
                         solidHeader = T,
                         collapsed = TRUE,
                         collapsible = T,
                         title = "Create TAF repository",
                         status = "primary"
-                    )
+                    ),
+            sidebarLayout(
+                sidebarPanel(
+                    width = 4,
+                    style = "height: fit-content; width: fit-content; white-space: normal;",
+                    htmlOutput(outputId = "html_tree", inline = FALSE)
+                ),
+                mainPanel(
+                    width = 8,
+                    style = "overflow-y: auto; white-space: normal;",               
+                    # verbatimTextOutput(outputId ="clicked_text"),
+                    uiOutput(outputId = "file_viz")             
                 )
             ),
         ),

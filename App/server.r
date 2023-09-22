@@ -19,6 +19,13 @@
 server <- function(input, output, session) {
   msg("server loop start:\n  ", getwd())
 
+  # values of the query string and first visit flag
+  query <- reactiveValues(query_from_table = FALSE)
+  observe({
+    updateQueryString(paste0("?",gsub(" ", "", input$tabset)), mode = "push")
+    print(input$tabset)
+  })
+
   observeEvent(input$login, {
     # display a modal dialog with a header, textinput and action buttons
     showModal(modalDialog(
@@ -126,6 +133,51 @@ server <- function(input, output, session) {
     callback = JS(callback)
   )
   
+    ## process radio button selection
+  observeEvent(input$rdbtn, {
+    # shinyjs::enable(selector = '.navbar-nav a[data-value="Development over time"')
+    # shinyjs::enable(selector = '.navbar-nav a[data-value="Quality of assessment"')
+    # shinyjs::enable(selector = '.navbar-nav a[data-value="Catch scenarios"')
+    
+    filtered_row <- group_filter_temp()[str_detect(group_filter_temp()$Select, regex(paste0("\\b", input$rdbtn,"\\b"))), ]
+        
+    updateQueryString(paste0("?repo=", basename(filtered_row$gitHubUrl)), mode = "push") ####
+
+    query$query_from_table <- TRUE
+
+    # msg("stock selected from table:", filtered_row$StockKeyLabel)
+    # msg("year of SAG/SID selected from table:", input$selected_years) #####
+
+    ### this allow to trigger the "Development over time" tab when the radio button is clicked
+    updateNavbarPage(session, "tabset", selected = "Assessment results")
+    
+  })
+
+  observe({
+    # read url string
+    query_string <- getQueryString()
+    names(query_string) <- tolower(names(query_string))    
+
+    query$repo <- query_string$repo
+
+    # if (!is.null(query$assessmentkey) && !query$query_from_table) {
+    #   info <- getFishStockReferencePoints(query$assessmentkey)[[1]]
+
+    #   query$stockkeylabel <- info$StockKeyLabel
+    #   query$year <- info$AssessmentYear #### 
+
+    #   msg("stock selected from url:", query$stockkeylabel)
+    #   msg("year of SAG/SID selected from url:", query$year) #####
+
+    #   updateNavbarPage(session, "tabset", selected = "Development over time")
+    #   shinyjs::enable(selector = '.navbar-nav a[data-value="Development over time"')
+    #   shinyjs::enable(selector = '.navbar-nav a[data-value="Quality of assessment"')
+    #   shinyjs::enable(selector = '.navbar-nav a[data-value="Catch scenarios"')
+      
+    # }
+  })
+
+
   observeEvent(input$repo_year, {
     updateSelectInput(
       session = getDefaultReactiveDomain(),
@@ -139,42 +191,131 @@ server <- function(input, output, session) {
     paste('Repo name:', paste0(input$repo_year, "_", input$stock_code, "_", input$repo_type))
   })
 
-  output$folder_tree <- renderPrint({
-    icesTAF::dir.tree(path = "D:/GitHub_2023/2023_FisheriesOverview")
+  html_treeDF <- reactive({
+    # print(query$repo)
+    # HTML(create_interactive_tree("./Data/ices_cat_3_template", "testRepo"))
+    CreateInteractiveTreeDF(repo = "ices_cat_3_template")
   })
+  
+  output$html_tree <- renderUI({
+      # HTML(create_interactive_tree("./Data/ices_cat_3_template", "testRepo"))
+      HTML(CreateInteractiveTreeHTML(html_treeDF()))
+    })
 
-  output$html_tree <- reactive({
-    HTML("
-    <div class='tree'>
-    <ul>
-      <li><i class='fa fa-folder-open'></i> Project
-        <ul>
-          <li><i class='fa fa-folder-open'></i> Opened Folder <span>- 15kb</span>
-            <ul>
-              <li><i class='fa fa-folder-open'></i> css
-                <ul>
-                  <li><i class='fa fa-code'></i> CSS Files <span>- 3kb</span>
-                  </li>
+  # output$clicked_text <- eventReactive(input$clicked_text, {
+  #  print(input$clicked_text)
+  # })
+  #########################################################################
+  observeEvent(input$clicked_text, {
 
-                </ul>
-              </li>
-              <li><i class='fa fa-folder'></i> Folder close <span>- 10kb</span>
-              </li>
-              <li><i class='fab fa-html5'></i> index.html</li>
-              <li><i class='fa fa-picture-o'></i> favicon.ico</li>
-            </ul>
-          </li>
-          <li><i class='fa fa-folder'></i> Folder close <span>- 420kb</span>
+    validate(
+      need(input$clicked_text != "", "No file selected")
+    )
+    # Check if a valid URL is provided
+    # if (!grepl("^https?://", input$urlInput)) {
+    #   shinyjs::alert("Please enter a valid URL starting with http:// or https://.")
+    #   return()
+    # }
 
-          </li>
-        </ul>
-      </li>
-    </ul>
-  </div>
-    
-    ")
+    # Download the file from the URL
+    file_extension <- tolower(tools::file_ext(html_treeDF()$ServerUrlString[as.numeric(input$clicked_text)]))
+    # print(file_extension)
+    fileURL <- html_treeDF()$ServerUrlString[as.numeric(input$clicked_text)]
+
+    if (file_extension == "csv") {
+      # data <- read.table(fileURL, sep = ",", header = TRUE)
+      
+      output$file_viz <- renderTable({
+        fileToDisplay <- read.table(fileURL, sep = ",", header = TRUE)
+      })
+      # output$downloadCSV <- downloadHandler(
+      #   filename = function() {
+      #     paste("downloaded_data.csv")
+      #   },
+      #   content = function(file) {
+      #     write.csv(data, file)
+      #   }
+      # )
+    } else if (file_extension == "png") {
+
+      output$file_viz <- renderText({
+        c('<img src="', fileURL,'" width="100%">')
+        })
+      # output$fileViewer <- renderImage({
+      #   list(src = input$urlInput, contentType = "image/png")
+      # }, deleteFile = FALSE)
+    } else if (file_extension == "bib") {
+
+      output$file_viz <- renderUI({
+        fileToDisplay <- getURL(fileURL)
+        # html_text <- gsub("\r\n", "</br>", fileToDisplay)
+        # HTML(html_text)
+
+        aceEditor(
+        outputId = "code_bib",
+        value = fileToDisplay,
+        mode = "yaml",
+        theme = "clouds_midnight",
+        fontSize = 14,
+        height = "1000px",
+        readOnly = TRUE
+      )
+      })
+     
+    } else if (file_extension == "r") {
+
+      output$file_viz <- renderUI({
+        fileToDisplay <- getURL(fileURL)
+        # print(fileToDisplay)
+        # html_text <- gsub("\r\n", "</br>", fileToDisplay)
+        # HTML(html_text)
+        # HTML(paste("<pre><code>", html_text, "</code></pre>"))
+
+
+        aceEditor(
+        outputId = "code",
+        value = fileToDisplay,
+        mode = "r",
+        theme = "chrome",
+        fontSize = 14,
+        height = "1000px",
+        readOnly = TRUE
+      )
+      })
+     
+    } else if (file_extension == "rmd") {
+
+      output$file_viz <- renderUI({
+        fileToDisplay <- getURL(fileURL)
+        rmarkdown::render(fileToDisplay)
+        # print(fileToDisplay)
+        # html_text <- gsub("\r\n", "</br>", fileToDisplay)
+        # HTML(html_text)
+      })
+     
+    } else {
+      shinyjs::alert("Invalid file type or file format.")
+    }
+
   })
+  #########################################################################
+  # output$file_viz <- renderTable({ ### this now works only for csv files
+  #   validate(
+  #     need(input$clicked_text != "", "No file selected")
+  #   )
+  #   fileURL <- html_treeDF()$ServerUrlString[as.numeric(input$clicked_text)]
+  #   # fileToDisplay <- getURL(fileURL)
+  #   if (html_treeDF()$FileFormats[as.numeric(input$clicked_text)] == "csv") {
+  #     fileToDisplay <- read.table(fileURL, sep = ",", header = TRUE)
+  #   } else {
+  #     print(getURL(fileURL))
+  #   }
+  # })
 
+
+
+
+################################################# TAF Overview
   TAFStatistics <- reactive({
     TAFStats <- getTAFStocksStatistics()
   })
