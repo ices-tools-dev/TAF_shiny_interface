@@ -21,10 +21,12 @@ server <- function(input, output, session) {
 
   # values of the query string and first visit flag
   query <- reactiveValues(query_from_table = FALSE)
-  observe({
-    updateQueryString(paste0("?",gsub(" ", "", input$tabset)), mode = "push")
-    print(input$tabset)
-  })
+
+
+  #observe({
+  #  updateQueryString(paste0("?tab=",gsub(" ", "", input$tabset)), mode = "push")
+  #  print(input$tabset)
+  #})
 
   observeEvent(input$login, {
     # display a modal dialog with a header, textinput and action buttons
@@ -56,14 +58,14 @@ server <- function(input, output, session) {
   repo_list <- reactive({
     req(input$selected_locations)
     stock_list_long <- getListStockAssessments()
-    print(stock_list_long)
+    print(str(stock_list_long))
     # stock_list_long[stock_list_long$EcoRegion == "Iceland Sea Ecoregion", "EcoRegion"] <- "Icelandic Waters Ecoregion"
     # stock_list_long <- stock_list_long %>% drop_na(AssessmentKey)
     stock_list_long <- purrr::map_dfr(
       .x = input$selected_locations,
       .f = function(.x) stock_list_long %>% dplyr::filter(str_detect(ecoregion, .x))
     )
-    
+
     if (nrow(stock_list_long) != 0) {
     stock_list_long %>% 
       dplyr::arrange(stockCode) %>%
@@ -194,9 +196,9 @@ server <- function(input, output, session) {
   html_treeDF <- reactive({
     # print(query$repo)
     # HTML(create_interactive_tree("./Data/ices_cat_3_template", "testRepo"))
-    CreateInteractiveTreeDF(repo = "ices_cat_3_template")
+    CreateInteractiveTreeDF(repo = query$repo)
   })
-  
+
   output$html_tree <- renderUI({
       # HTML(create_interactive_tree("./Data/ices_cat_3_template", "testRepo"))
       HTML(CreateInteractiveTreeHTML(html_treeDF()))
@@ -261,8 +263,8 @@ server <- function(input, output, session) {
         readOnly = TRUE
       )
       })
-     
-    } else if (file_extension == "r") {
+
+    } else if (file_extension %in% c("r", "R", "Rmd")) {
 
       output$file_viz <- renderUI({
         fileToDisplay <- getURL(fileURL)
@@ -282,19 +284,19 @@ server <- function(input, output, session) {
         readOnly = TRUE
       )
       })
-     
-    } else if (file_extension == "rmd") {
+
+    } else if (file_extension == "md") {
 
       output$file_viz <- renderUI({
         fileToDisplay <- getURL(fileURL)
-        rmarkdown::render(fileToDisplay)
+        markdown::mark(fileToDisplay)
         # print(fileToDisplay)
         # html_text <- gsub("\r\n", "</br>", fileToDisplay)
         # HTML(html_text)
       })
-     
+
     } else {
-      shinyjs::alert("Invalid file type or file format.")
+      #shinyjs::alert("Invalid file type or file format.")
     }
 
   })
