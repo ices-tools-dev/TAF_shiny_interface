@@ -98,6 +98,7 @@ server <- function(input, output, session) {
    group_filter_temp() %>% select(
       "Select",
       "stockCode",
+      "year",
       # "EcoRegion",
       # "icon",
       "species",
@@ -108,6 +109,7 @@ server <- function(input, output, session) {
       rename(
         "Select" = Select,
         "Stock code" = stockCode,
+        "Year"= year,
         # "Ecoregion" = EcoRegion,
         # " " = icon,
         "Common name" = species,
