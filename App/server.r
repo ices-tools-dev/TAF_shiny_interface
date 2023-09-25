@@ -295,6 +295,31 @@ server <- function(input, output, session) {
         # HTML(html_text)
       })
 
+    } else if (file_extension == "html") {
+
+      output$file_viz <- renderUI({
+        fileToDisplay <- getURL(fileURL)
+        HTML(fileToDisplay)
+        # print(fileToDisplay)
+        # html_text <- gsub("\r\n", "</br>", fileToDisplay)
+        # HTML(html_text)
+      })
+
+    } else if (file_extension == "txt") {
+
+      output$file_viz <- renderUI({
+        fileToDisplay <- getURL(fileURL)
+        aceEditor(
+        outputId = "code",
+        value = fileToDisplay,
+        mode = "text",
+        theme = "chrome",
+        fontSize = 14,
+        height = "1000px",
+        readOnly = TRUE
+      )
+      })
+
     } else {
       #shinyjs::alert("Invalid file type or file format.")
     }
