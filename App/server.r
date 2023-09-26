@@ -23,10 +23,57 @@ server <- function(input, output, session) {
   query <- reactiveValues(query_from_table = FALSE)
 
 
-  #observe({
-  #  updateQueryString(paste0("?tab=",gsub(" ", "", input$tabset)), mode = "push")
-  #  print(input$tabset)
+  observe({
+
+    query_string <- getQueryString()
+    names(query_string) <- tolower(names(query_string))
+
+    print("query string:")
+    print(str(query_string))
+
+  })
+
+  observe({
+
+    #query_string$tab <- input$tabset
+
+    #if (!query_string$tab %in% c("Stock assessment selection", "Assessment results")) {
+    #  query_string$repo <- NULL
+    #}
+
+    #query <- paste0("?", paste(names(query_string), query_string, sep = "=", collapse = "&"))
+    
+    #updateQueryString(query, mode = "push")
+    updateQueryString(paste0("?tab=", input$tabset), mode = "push")
+    
+    #query$repo <- query_string$repo
+
+    print(paste0("first observe: ", input$tabset))
+  })
+
+
+ # observe({
+    # read url string
+
+
+    # if (!is.null(query$assessmentkey) && !query$query_from_table) {
+    #   info <- getFishStockReferencePoints(query$assessmentkey)[[1]]
+
+    #   query$stockkeylabel <- info$StockKeyLabel
+    #   query$year <- info$AssessmentYear #### 
+
+    #   msg("stock selected from url:", query$stockkeylabel)
+    #   msg("year of SAG/SID selected from url:", query$year) #####
+
+    #   updateNavbarPage(session, "tabset", selected = "Development over time")
+    #   shinyjs::enable(selector = '.navbar-nav a[data-value="Development over time"')
+    #   shinyjs::enable(selector = '.navbar-nav a[data-value="Quality of assessment"')
+    #   shinyjs::enable(selector = '.navbar-nav a[data-value="Catch scenarios"')
+      
+    # }
   #})
+
+
 
   observeEvent(input$login, {
     # display a modal dialog with a header, textinput and action buttons
@@ -58,7 +105,7 @@ server <- function(input, output, session) {
   repo_list <- reactive({
     req(input$selected_locations)
     stock_list_long <- getListStockAssessments()
-    print(str(stock_list_long))
+    #print(str(stock_list_long))
     # stock_list_long[stock_list_long$EcoRegion == "Iceland Sea Ecoregion", "EcoRegion"] <- "Icelandic Waters Ecoregion"
     # stock_list_long <- stock_list_long %>% drop_na(AssessmentKey)
     stock_list_long <- purrr::map_dfr(
@@ -157,31 +204,6 @@ server <- function(input, output, session) {
     
   })
 
-  observe({
-    # read url string
-    query_string <- getQueryString()
-    names(query_string) <- tolower(names(query_string))    
-
-    query$repo <- query_string$repo
-
-    # if (!is.null(query$assessmentkey) && !query$query_from_table) {
-    #   info <- getFishStockReferencePoints(query$assessmentkey)[[1]]
-
-    #   query$stockkeylabel <- info$StockKeyLabel
-    #   query$year <- info$AssessmentYear #### 
-
-    #   msg("stock selected from url:", query$stockkeylabel)
-    #   msg("year of SAG/SID selected from url:", query$year) #####
-
-    #   updateNavbarPage(session, "tabset", selected = "Development over time")
-    #   shinyjs::enable(selector = '.navbar-nav a[data-value="Development over time"')
-    #   shinyjs::enable(selector = '.navbar-nav a[data-value="Quality of assessment"')
-    #   shinyjs::enable(selector = '.navbar-nav a[data-value="Catch scenarios"')
-      
-    # }
-  })
-
-
   observeEvent(input$repo_year, {
     updateSelectInput(
       session = getDefaultReactiveDomain(),
@@ -196,7 +218,9 @@ server <- function(input, output, session) {
   })
 
   html_treeDF <- reactive({
-    # print(query$repo)
+    #print("###########")
+    #print(query$repo)
+    #print("###########")
     # HTML(create_interactive_tree("./Data/ices_cat_3_template", "testRepo"))
     CreateInteractiveTreeDF(repo = query$repo)
   })
