@@ -25,17 +25,19 @@ server <- function(input, output, session) {
   old_tabset <- ""
 
   observe({
+    # reacts to tab click, and url update
     # get stuff we need
-    print("\n\n*** observing query and input ***")
+    print(""); print("")
+    print("*** observing url and input ***")
       query_string <- getQueryString()
       names(query_string) <- tolower(names(query_string))
 
       tabset <- input$tabset
 
-      print("current url:")
-      print(str(query_string))
       print("old tab:")
       print(old_tabset)
+      print("current url:")
+      print(str(query_string))
       print("current tab:")
       print(input$tabset)
 
@@ -43,48 +45,42 @@ server <- function(input, output, session) {
         # then server loop has restarted: i.e. a url has been entered
 
         if (is.null(query_string$tab)) {
-          print("updating url from empty URL")
+          # no tab specified, update url and old tabset
+          print("updating url from empty")
           updateQueryString(paste0("?tab=", tabset), mode = "push")
           old_tabset <<- tabset # always will be 1st tab
-        }
-
-        if (!is.null(query_string$tab)) {
+        } else
+        {
+          # no tab specified, update url and old tabset
           print("updating tab from new URL")
           old_tabset <<- query_string$tab
           updateNavbarPage(session, "tabset", selected = query_string$tab)
         }
       } else
       {
-        # then a tab has been clicked
         if (input$tabset != old_tabset) {
+          # then a tab has been clicked inside a session
           # page is correct, url out of date
           print("updating query - tab clicked")
           old_tabset <<- tabset
           updateQueryString(paste0("?tab=", tabset), mode = "push")
+        } else
+        if (query_string$tab != old_tabset) {
+          # then a url has been written inside a session without a tab click
+          # url is correct, page out of date
+          print("updating tab - url modified")
+          old_tabset <<- query_string$tab
+          updateNavbarPage(session, "tabset", selected = query_string$tab)
+        }
+        else {
+          print("nothing to do")
         }
       }
 
-      print("*** END observing query and input ***\n\n")
+      print("*** END observing query and input ***")
+      print("")
+      print("")
   })
-
-  #observe({
-
-    #query_string$tab <- input$tabset
-
-    #if (!query_string$tab %in% c("Stock assessment selection", "Assessment results")) {
-    #  query_string$repo <- NULL
-    #}
-
-    #query <- paste0("?", paste(names(query_string), query_string, sep = "=", collapse = "&"))
-
-    #updateQueryString(query, mode = "push")
-    #updateQueryString(paste0("?tab=", input$tabset), mode = "push")
-
-    #query$repo <- query_string$repo
-
-    #print(paste0("first observe: ", input$tabset))
-  #})
-
 
  # observe({
     # read url string
@@ -226,16 +222,7 @@ server <- function(input, output, session) {
 
     filtered_row <- group_filter_temp()[str_detect(group_filter_temp()$Select, regex(paste0("\\b", input$rdbtn,"\\b"))), ]
 
-    updateQueryString(paste0("?repo=", basename(filtered_row$gitHubUrl)), mode = "push") ####
-
-    query$query_from_table <- TRUE
-
-    # msg("stock selected from table:", filtered_row$StockKeyLabel)
-    # msg("year of SAG/SID selected from table:", input$selected_years) #####
-
-    ### this allow to trigger the "Development over time" tab when the radio button is clicked
-    updateNavbarPage(session, "tabset", selected = "Assessment results")
-
+    updateQueryString(paste0("?tab=Assessment%20results&repo=", basename(filtered_row$gitHubUrl)), mode = "push") ####
   })
 
   observeEvent(input$repo_year, {
@@ -256,7 +243,8 @@ server <- function(input, output, session) {
     #print(query$repo)
     #print("###########")
     # HTML(create_interactive_tree("./Data/ices_cat_3_template", "testRepo"))
-    CreateInteractiveTreeDF(repo = query$repo)
+    query_string <- getQueryString()
+    CreateInteractiveTreeDF(repo = query_string$repo)
   })
 
   output$html_tree <- renderUI({
@@ -279,10 +267,22 @@ server <- function(input, output, session) {
     #   return()
     # }
 
+  }
+
+  observe({
+
     # Download the file from the URL
     file_extension <- tolower(tools::file_ext(html_treeDF()$ServerUrlString[as.numeric(input$clicked_text)]))
     # print(file_extension)
     fileURL <- html_treeDF()$ServerUrlString[as.numeric(input$clicked_text)]
+
+    fileName <- URLencode(html_treeDF()$pathString[as.numeric(input$clicked_text)])
+
+    query_string <- getQueryString()
+    updateQueryString(
+      paste0("?tab=Assessment%20results&repo=", query_string$repo, "&file=", fileName),
+      "push"
+    )
 
     if (file_extension == "csv") {
       # data <- read.table(fileURL, sep = ",", header = TRUE)
@@ -349,7 +349,7 @@ server <- function(input, output, session) {
 
       output$file_viz <- renderUI({
         fileToDisplay <- getURL(fileURL)
-        markdown::mark(fileToDisplay)
+        HTML(markdown::mark(fileToDisplay))
         # print(fileToDisplay)
         # html_text <- gsub("\r\n", "</br>", fileToDisplay)
         # HTML(html_text)
@@ -426,4 +426,3 @@ server <- function(input, output, session) {
    })
 
 }
-
