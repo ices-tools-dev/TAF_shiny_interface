@@ -20,20 +20,54 @@ server <- function(input, output, session) {
   msg("server loop start:\n  ", getwd())
 
   # values of the query string and first visit flag
-  query <- reactiveValues(query_from_table = FALSE)
+  query <- reactiveValues(query_from_table = FALSE, update_from_url = TRUE)
 
+  old_tabset <- ""
 
   observe({
+    # get stuff we need
+    print("\n\n*** observing query and input ***")
+      query_string <- getQueryString()
+      names(query_string) <- tolower(names(query_string))
 
-    query_string <- getQueryString()
-    names(query_string) <- tolower(names(query_string))
+      tabset <- input$tabset
 
-    print("query string:")
-    print(str(query_string))
+      print("current url:")
+      print(str(query_string))
+      print("old tab:")
+      print(old_tabset)
+      print("current tab:")
+      print(input$tabset)
 
+      if (old_tabset == "") {
+        # then server loop has restarted: i.e. a url has been entered
+
+        if (is.null(query_string$tab)) {
+          print("updating url from empty URL")
+          updateQueryString(paste0("?tab=", tabset), mode = "push")
+          old_tabset <<- tabset # always will be 1st tab
+        }
+
+        if (!is.null(query_string$tab)) {
+          print("updating tab from new URL")
+          old_tabset <<- query_string$tab
+          updateNavbarPage(session, "tabset", selected = query_string$tab)
+        }
+      } else
+      {
+        # then a tab has been clicked
+        if (input$tabset != old_tabset) {
+          # page is correct, url out of date
+          print("updating query - tab clicked")
+          old_tabset <<- tabset
+          updateQueryString(paste0("?tab=", tabset), mode = "push")
+        }
+      }
+
+      print("*** END observing query and input ***\n\n")
   })
 
-  observe({
+  #observe({
 
     #query_string$tab <- input$tabset
 
@@ -42,14 +76,14 @@ server <- function(input, output, session) {
     #}
 
     #query <- paste0("?", paste(names(query_string), query_string, sep = "=", collapse = "&"))
-    
+
     #updateQueryString(query, mode = "push")
-    updateQueryString(paste0("?tab=", input$tabset), mode = "push")
-    
+    #updateQueryString(paste0("?tab=", input$tabset), mode = "push")
+
     #query$repo <- query_string$repo
 
-    print(paste0("first observe: ", input$tabset))
-  })
+    #print(paste0("first observe: ", input$tabset))
+  #})
 
 
  # observe({
@@ -60,7 +94,7 @@ server <- function(input, output, session) {
     #   info <- getFishStockReferencePoints(query$assessmentkey)[[1]]
 
     #   query$stockkeylabel <- info$StockKeyLabel
-    #   query$year <- info$AssessmentYear #### 
+    #   query$year <- info$AssessmentYear ####
 
     #   msg("stock selected from url:", query$stockkeylabel)
     #   msg("year of SAG/SID selected from url:", query$year) #####
@@ -69,7 +103,7 @@ server <- function(input, output, session) {
     #   shinyjs::enable(selector = '.navbar-nav a[data-value="Development over time"')
     #   shinyjs::enable(selector = '.navbar-nav a[data-value="Quality of assessment"')
     #   shinyjs::enable(selector = '.navbar-nav a[data-value="Catch scenarios"')
-      
+
     # }
   #})
 
@@ -86,15 +120,15 @@ server <- function(input, output, session) {
       )
     ))
   })
-  
+
   submittedToken <- reactiveVal("paste your token here")
-  
+
   # only store the information if the user clicks submit
   observeEvent(input$submit, {
     removeModal()
     submittedToken(input$token)
   })
-  
+
   output$text <- renderPrint({
     paste('Token:', submittedToken())
   })
@@ -114,7 +148,7 @@ server <- function(input, output, session) {
     )
 
     if (nrow(stock_list_long) != 0) {
-    stock_list_long %>% 
+    stock_list_long %>%
       dplyr::arrange(stockCode) %>%
       dplyr::mutate(
         # EcoRegion = removeWords(EcoRegion, "Ecoregion"),
@@ -124,10 +158,10 @@ server <- function(input, output, session) {
         # stock_location = parse_location_from_stock_description(stock_description)
       )
   }
-  }) 
+  })
 
   group_filter_temp <- callModule(
-    
+
     module = selectizeGroupServer,
     id = "my-filters",
     data = repo_list,
@@ -137,11 +171,11 @@ server <- function(input, output, session) {
     inline = FALSE
   )
 
-  group_filter <- reactive({ 
+  group_filter <- reactive({
     validate(
       need(!nrow(repo_list()) == 0, "No published stocks in the selected ecoregion and year")
     )
-  
+
    group_filter_temp() %>% select(
       "Select",
       "stockCode",
@@ -183,15 +217,15 @@ server <- function(input, output, session) {
     ),
     callback = JS(callback)
   )
-  
+
     ## process radio button selection
   observeEvent(input$rdbtn, {
     # shinyjs::enable(selector = '.navbar-nav a[data-value="Development over time"')
     # shinyjs::enable(selector = '.navbar-nav a[data-value="Quality of assessment"')
     # shinyjs::enable(selector = '.navbar-nav a[data-value="Catch scenarios"')
-    
+
     filtered_row <- group_filter_temp()[str_detect(group_filter_temp()$Select, regex(paste0("\\b", input$rdbtn,"\\b"))), ]
-        
+
     updateQueryString(paste0("?repo=", basename(filtered_row$gitHubUrl)), mode = "push") ####
 
     query$query_from_table <- TRUE
@@ -201,7 +235,7 @@ server <- function(input, output, session) {
 
     ### this allow to trigger the "Development over time" tab when the radio button is clicked
     updateNavbarPage(session, "tabset", selected = "Assessment results")
-    
+
   })
 
   observeEvent(input$repo_year, {
@@ -252,7 +286,7 @@ server <- function(input, output, session) {
 
     if (file_extension == "csv") {
       # data <- read.table(fileURL, sep = ",", header = TRUE)
-      
+
       output$file_viz <- renderTable({
         fileToDisplay <- read.table(fileURL, sep = ",", header = TRUE)
       })
