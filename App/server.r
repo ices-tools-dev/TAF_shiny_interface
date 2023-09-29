@@ -265,9 +265,6 @@ server <- function(input, output, session) {
     #   shinyjs::alert("Please enter a valid URL starting with http:// or https://.")
     #   return()
     # }
-  })
-
-  observe({
 
     # Download the file from the URL
     file_extension <- tolower(tools::file_ext(html_treeDF()$ServerUrlString[as.numeric(input$clicked_text)]))
