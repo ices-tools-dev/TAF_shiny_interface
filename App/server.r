@@ -257,7 +257,6 @@ server <- function(input, output, session) {
   # })
   #########################################################################
   observeEvent(input$clicked_text, {
-
     validate(
       need(input$clicked_text != "", "No file selected")
     )
@@ -266,8 +265,7 @@ server <- function(input, output, session) {
     #   shinyjs::alert("Please enter a valid URL starting with http:// or https://.")
     #   return()
     # }
-
-  }
+  })
 
   observe({
 
