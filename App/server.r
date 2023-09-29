@@ -21,6 +21,7 @@ server <- function(input, output, session) {
 
   # values of the query string and first visit flag
   query <- reactiveValues(query_from_table = FALSE, update_from_url = TRUE)
+  selectedFile <- reactiveValues()
 
   old_tabset <- ""
 
@@ -64,17 +65,22 @@ server <- function(input, output, session) {
           print("updating query - tab clicked")
           old_tabset <<- tabset
           updateQueryString(paste0("?tab=", tabset), mode = "push")
-        } else
-        if (query_string$tab != old_tabset) {
+        } else if (query_string$tab != old_tabset) {
           # then a url has been written inside a session without a tab click
           # url is correct, page out of date
           print("updating tab - url modified")
           old_tabset <<- query_string$tab
           updateNavbarPage(session, "tabset", selected = query_string$tab)
-        }
-        else {
+        } else {
           print("nothing to do")
         }
+      }
+
+      # special case for assessment results tab
+      if (query_string$tab == "Assessment results" && !is.null(query_string$repo) && !is.null(query_string$file)) {
+        print("setting selected file to:")
+        print(query_string$file)
+        selectedFile$name <- paste0(query_string$repo, "/", query_string$file)
       }
 
       print("*** END observing query and input ***")
@@ -168,11 +174,11 @@ server <- function(input, output, session) {
   )
 
   group_filter <- reactive({
-    validate(
-      need(!nrow(repo_list()) == 0, "No published stocks in the selected ecoregion and year")
-    )
+      validate(
+        need(!nrow(repo_list()) == 0, "No published stocks in the selected ecoregion and year")
+      )
 
-   group_filter_temp() %>% select(
+    group_filter_temp() %>% select(
       "Select",
       "stockCode",
       "year",
@@ -234,15 +240,13 @@ server <- function(input, output, session) {
       selected = NULL
     )
   })
+
   output$repo_string <- renderPrint({
     paste('Repo name:', paste0(input$repo_year, "_", input$stock_code, "_", input$repo_type))
   })
 
   html_treeDF <- reactive({
-    #print("###########")
-    #print(query$repo)
-    #print("###########")
-    # HTML(create_interactive_tree("./Data/ices_cat_3_template", "testRepo"))
+    # reacts to url changes
     query_string <- getQueryString()
     CreateInteractiveTreeDF(repo = query_string$repo)
   })
@@ -266,18 +270,26 @@ server <- function(input, output, session) {
     #   return()
     # }
 
-    # Download the file from the URL
-    file_extension <- tolower(tools::file_ext(html_treeDF()$ServerUrlString[as.numeric(input$clicked_text)]))
-    # print(file_extension)
-    fileURL <- html_treeDF()$ServerUrlString[as.numeric(input$clicked_text)]
+    query_string <- getQueryString()
 
     fileName <- URLencode(html_treeDF()$pathString[as.numeric(input$clicked_text)])
+    # remove repo from file path
+    fileName <- substring(fileName, nchar(query_string$repo) + 2)
 
-    query_string <- getQueryString()
     updateQueryString(
       paste0("?tab=Assessment%20results&repo=", query_string$repo, "&file=", fileName),
       "push"
     )
+  })
+
+  observeEvent(selectedFile$name, {
+
+    id <- which(html_treeDF()$pathString == selectedFile$name)
+
+    # Download the file from the URL
+    file_extension <- tolower(tools::file_ext(html_treeDF()$ServerUrlString[id]))
+    # print(file_extension)
+    fileURL <- html_treeDF()$ServerUrlString[id]
 
     if (file_extension == "csv") {
       # data <- read.table(fileURL, sep = ",", header = TRUE)
@@ -360,7 +372,7 @@ server <- function(input, output, session) {
         # HTML(html_text)
       })
 
-    } else if (file_extension == "txt") {
+    } else if (file_extension %in% c("txt", "dat")) {
 
       output$file_viz <- renderUI({
         fileToDisplay <- getURL(fileURL)

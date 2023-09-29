@@ -46,7 +46,7 @@ CreateInteractiveTreeDF <- function(repo) {
   paths <-jsonlite::read_json(paste0("https://adminweb06.ices.dk/api/dir/",repo), simplifyVector = TRUE)
   # print(paths)
   # to clean off initial path -  will not need this in production
-  # paths <- gsub("./Data/", "", paths)
+  paths <- paths[!(grepl("/[.]git", paths) | grepl("(bootstrap|boot)/library", paths))]
 
   tree <- as.Node(data.frame(pathString = paths))
 
@@ -63,15 +63,15 @@ CreateInteractiveTreeDF <- function(repo) {
 }
 
 CreateInteractiveTreeHTML <- function(output){
-  
+
   makeOne <- function(i) {
     paste0(
       paste(rep("  ", output$level[i] - 1), collapse = ""),
       "* ",
-       sapply( output$FileFormats[i], get_icon), 
+       sapply( output$FileFormats[i], get_icon),
        " ",
        tags$a(href = "#", id = i, output$filename[i])
-      
+
     )
   }
 
@@ -92,5 +92,3 @@ CreateInteractiveTreeHTML <- function(output){
 # CreateInteractiveTreeHTML(CreateInteractiveTreeDF(path, repo))
 
 # HTML(create_interactive_tree(path, repo))
-
-
