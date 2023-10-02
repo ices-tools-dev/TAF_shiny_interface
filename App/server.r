@@ -20,13 +20,96 @@ server <- function(input, output, session) {
   msg("server loop start:\n  ", getwd())
 
   # values of the query string and first visit flag
-  query <- reactiveValues(query_from_table = FALSE)
+  query <- reactiveValues(query_from_table = FALSE, update_from_url = TRUE)
+  selectedFile <- reactiveValues()
+
+  old_tabset <- ""
+
+  observe({
+    # reacts to tab click, and url update
+    # get stuff we need
+    print(""); print("")
+    print("*** observing url and input ***")
+      query_string <- getQueryString()
+      names(query_string) <- tolower(names(query_string))
+
+      tabset <- input$tabset
+
+      print("old tab:")
+      print(old_tabset)
+      print("current url:")
+      print(str(query_string))
+      print("current tab:")
+      print(input$tabset)
+
+      if (old_tabset == "") {
+        # then server loop has restarted: i.e. a url has been entered
+
+        if (is.null(query_string$tab)) {
+          # no tab specified, update url and old tabset
+          print("updating url from empty")
+          updateQueryString(paste0("?tab=", tabset), mode = "push")
+          old_tabset <<- tabset # always will be 1st tab
+        } else
+        {
+          # no tab specified, update url and old tabset
+          print("updating tab from new URL")
+          old_tabset <<- query_string$tab
+          updateNavbarPage(session, "tabset", selected = query_string$tab)
+        }
+      } else
+      {
+        if (input$tabset != old_tabset) {
+          # then a tab has been clicked inside a session
+          # page is correct, url out of date
+          print("updating query - tab clicked")
+          old_tabset <<- tabset
+          updateQueryString(paste0("?tab=", tabset), mode = "push")
+        } else if (query_string$tab != old_tabset) {
+          # then a url has been written inside a session without a tab click
+          # url is correct, page out of date
+          print("updating tab - url modified")
+          old_tabset <<- query_string$tab
+          updateNavbarPage(session, "tabset", selected = query_string$tab)
+        } else {
+          print("nothing to do")
+        }
+      }
+
+      # special case for assessment results tab
+      if (query_string$tab == "Assessment results" && !is.null(query_string$repo) && !is.null(query_string$file)) {
+        print("setting selected file to:")
+        print(query_string$file)
+        selectedFile$name <- paste0(query_string$repo, "/", query_string$file)
+      }
+
+      print("*** END observing query and input ***")
+      print("")
+      print("")
+  })
+
+ # observe({
+    # read url string
 
 
-  #observe({
-  #  updateQueryString(paste0("?tab=",gsub(" ", "", input$tabset)), mode = "push")
-  #  print(input$tabset)
+    # if (!is.null(query$assessmentkey) && !query$query_from_table) {
+    #   info <- getFishStockReferencePoints(query$assessmentkey)[[1]]
+
+    #   query$stockkeylabel <- info$StockKeyLabel
+    #   query$year <- info$AssessmentYear ####
+
+    #   msg("stock selected from url:", query$stockkeylabel)
+    #   msg("year of SAG/SID selected from url:", query$year) #####
+
+    #   updateNavbarPage(session, "tabset", selected = "Development over time")
+    #   shinyjs::enable(selector = '.navbar-nav a[data-value="Development over time"')
+    #   shinyjs::enable(selector = '.navbar-nav a[data-value="Quality of assessment"')
+    #   shinyjs::enable(selector = '.navbar-nav a[data-value="Catch scenarios"')
+
+    # }
   #})
+
+
 
   observeEvent(input$login, {
     # display a modal dialog with a header, textinput and action buttons
@@ -39,15 +122,15 @@ server <- function(input, output, session) {
       )
     ))
   })
-  
+
   submittedToken <- reactiveVal("paste your token here")
-  
+
   # only store the information if the user clicks submit
   observeEvent(input$submit, {
     removeModal()
     submittedToken(input$token)
   })
-  
+
   output$text <- renderPrint({
     paste('Token:', submittedToken())
   })
@@ -58,7 +141,7 @@ server <- function(input, output, session) {
   repo_list <- reactive({
     req(input$selected_locations)
     stock_list_long <- getListStockAssessments()
-    print(str(stock_list_long))
+    #print(str(stock_list_long))
     # stock_list_long[stock_list_long$EcoRegion == "Iceland Sea Ecoregion", "EcoRegion"] <- "Icelandic Waters Ecoregion"
     # stock_list_long <- stock_list_long %>% drop_na(AssessmentKey)
     stock_list_long <- purrr::map_dfr(
@@ -67,7 +150,7 @@ server <- function(input, output, session) {
     )
 
     if (nrow(stock_list_long) != 0) {
-    stock_list_long %>% 
+    stock_list_long %>%
       dplyr::arrange(stockCode) %>%
       dplyr::mutate(
         # EcoRegion = removeWords(EcoRegion, "Ecoregion"),
@@ -77,10 +160,10 @@ server <- function(input, output, session) {
         # stock_location = parse_location_from_stock_description(stock_description)
       )
   }
-  }) 
+  })
 
   group_filter_temp <- callModule(
-    
+
     module = selectizeGroupServer,
     id = "my-filters",
     data = repo_list,
@@ -90,12 +173,12 @@ server <- function(input, output, session) {
     inline = FALSE
   )
 
-  group_filter <- reactive({ 
-    validate(
-      need(!nrow(repo_list()) == 0, "No published stocks in the selected ecoregion and year")
-    )
-  
-   group_filter_temp() %>% select(
+  group_filter <- reactive({
+      validate(
+        need(!nrow(repo_list()) == 0, "No published stocks in the selected ecoregion and year")
+      )
+
+    group_filter_temp() %>% select(
       "Select",
       "stockCode",
       "year",
@@ -136,51 +219,17 @@ server <- function(input, output, session) {
     ),
     callback = JS(callback)
   )
-  
+
     ## process radio button selection
   observeEvent(input$rdbtn, {
     # shinyjs::enable(selector = '.navbar-nav a[data-value="Development over time"')
     # shinyjs::enable(selector = '.navbar-nav a[data-value="Quality of assessment"')
     # shinyjs::enable(selector = '.navbar-nav a[data-value="Catch scenarios"')
-    
+
     filtered_row <- group_filter_temp()[str_detect(group_filter_temp()$Select, regex(paste0("\\b", input$rdbtn,"\\b"))), ]
-        
-    updateQueryString(paste0("?repo=", basename(filtered_row$gitHubUrl)), mode = "push") ####
 
-    query$query_from_table <- TRUE
-
-    # msg("stock selected from table:", filtered_row$StockKeyLabel)
-    # msg("year of SAG/SID selected from table:", input$selected_years) #####
-
-    ### this allow to trigger the "Development over time" tab when the radio button is clicked
-    updateNavbarPage(session, "tabset", selected = "Assessment results")
-    
+    updateQueryString(paste0("?tab=Assessment%20results&repo=", basename(filtered_row$gitHubUrl)), mode = "push") ####
   })
-
-  observe({
-    # read url string
-    query_string <- getQueryString()
-    names(query_string) <- tolower(names(query_string))    
-
-    query$repo <- query_string$repo
-
-    # if (!is.null(query$assessmentkey) && !query$query_from_table) {
-    #   info <- getFishStockReferencePoints(query$assessmentkey)[[1]]
-
-    #   query$stockkeylabel <- info$StockKeyLabel
-    #   query$year <- info$AssessmentYear #### 
-
-    #   msg("stock selected from url:", query$stockkeylabel)
-    #   msg("year of SAG/SID selected from url:", query$year) #####
-
-    #   updateNavbarPage(session, "tabset", selected = "Development over time")
-    #   shinyjs::enable(selector = '.navbar-nav a[data-value="Development over time"')
-    #   shinyjs::enable(selector = '.navbar-nav a[data-value="Quality of assessment"')
-    #   shinyjs::enable(selector = '.navbar-nav a[data-value="Catch scenarios"')
-      
-    # }
-  })
-
 
   observeEvent(input$repo_year, {
     updateSelectInput(
@@ -191,14 +240,15 @@ server <- function(input, output, session) {
       selected = NULL
     )
   })
+
   output$repo_string <- renderPrint({
     paste('Repo name:', paste0(input$repo_year, "_", input$stock_code, "_", input$repo_type))
   })
 
   html_treeDF <- reactive({
-    # print(query$repo)
-    # HTML(create_interactive_tree("./Data/ices_cat_3_template", "testRepo"))
-    CreateInteractiveTreeDF(repo = query$repo)
+    # reacts to url changes
+    query_string <- getQueryString()
+    CreateInteractiveTreeDF(repo = query_string$repo)
   })
 
   output$html_tree <- renderUI({
@@ -211,7 +261,6 @@ server <- function(input, output, session) {
   # })
   #########################################################################
   observeEvent(input$clicked_text, {
-
     validate(
       need(input$clicked_text != "", "No file selected")
     )
@@ -221,109 +270,119 @@ server <- function(input, output, session) {
     #   return()
     # }
 
-    # Download the file from the URL
-    file_extension <- tolower(tools::file_ext(html_treeDF()$ServerUrlString[as.numeric(input$clicked_text)]))
-    # print(file_extension)
-    fileURL <- html_treeDF()$ServerUrlString[as.numeric(input$clicked_text)]
+    query_string <- getQueryString()
 
-    if (file_extension == "csv") {
-      # data <- read.table(fileURL, sep = ",", header = TRUE)
-      
-      output$file_viz <- renderTable({
-        fileToDisplay <- read.table(fileURL, sep = ",", header = TRUE)
-      })
-      # output$downloadCSV <- downloadHandler(
-      #   filename = function() {
-      #     paste("downloaded_data.csv")
-      #   },
-      #   content = function(file) {
-      #     write.csv(data, file)
-      #   }
-      # )
-    } else if (file_extension == "png") {
+    fileName <- URLencode(html_treeDF()$pathString[as.numeric(input$clicked_text)])
+    # remove repo from file path
+    fileName <- substring(fileName, nchar(query_string$repo) + 2)
 
-      output$file_viz <- renderText({
-        c('<img src="', fileURL,'" width="100%">')
+    updateQueryString(
+      paste0("?tab=Assessment%20results&repo=", query_string$repo, "&file=", fileName),
+      "push"
+    )
+  })
+
+  observeEvent(selectedFile$name, {
+
+    id <- which(html_treeDF()$pathString == selectedFile$name)
+
+    if (length(id) == 1) {
+      # Download the file from the URL
+      file_extension <- tolower(tools::file_ext(html_treeDF()$ServerUrlString[id]))
+      # print(file_extension)
+      fileURL <- html_treeDF()$ServerUrlString[id]
+
+      if (file_extension == "csv") {
+        # data <- read.table(fileURL, sep = ",", header = TRUE)
+
+        output$file_viz <- renderTable({
+          fileToDisplay <- read.table(fileURL, sep = ",", header = TRUE)
         })
-      # output$fileViewer <- renderImage({
-      #   list(src = input$urlInput, contentType = "image/png")
-      # }, deleteFile = FALSE)
-    } else if (file_extension == "bib") {
+        # output$downloadCSV <- downloadHandler(
+        #   filename = function() {
+        #     paste("downloaded_data.csv")
+        #   },
+        #   content = function(file) {
+        #     write.csv(data, file)
+        #   }
+        # )
+      } else if (file_extension == "png") {
+        output$file_viz <- renderText({
+          c('<img src="', fileURL, '" width="100%">')
+        })
+        # output$fileViewer <- renderImage({
+        #   list(src = input$urlInput, contentType = "image/png")
+        # }, deleteFile = FALSE)
+      } else if (file_extension == "bib") {
+        output$file_viz <- renderUI({
+          fileToDisplay <- getURL(fileURL)
+          # html_text <- gsub("\r\n", "</br>", fileToDisplay)
+          # HTML(html_text)
 
-      output$file_viz <- renderUI({
-        fileToDisplay <- getURL(fileURL)
-        # html_text <- gsub("\r\n", "</br>", fileToDisplay)
-        # HTML(html_text)
-
-        aceEditor(
-        outputId = "code_bib",
-        value = fileToDisplay,
-        mode = "yaml",
-        theme = "clouds_midnight",
-        fontSize = 14,
-        height = "1000px",
-        readOnly = TRUE
-      )
-      })
-
-    } else if (file_extension %in% c("r", "R", "Rmd")) {
-
-      output$file_viz <- renderUI({
-        fileToDisplay <- getURL(fileURL)
-        # print(fileToDisplay)
-        # html_text <- gsub("\r\n", "</br>", fileToDisplay)
-        # HTML(html_text)
-        # HTML(paste("<pre><code>", html_text, "</code></pre>"))
+          aceEditor(
+            outputId = "code_bib",
+            value = fileToDisplay,
+            mode = "yaml",
+            theme = "clouds_midnight",
+            fontSize = 14,
+            height = "1000px",
+            readOnly = TRUE
+          )
+        })
+      } else if (file_extension %in% c("r", "R", "Rmd")) {
+        output$file_viz <- renderUI({
+          fileToDisplay <- getURL(fileURL)
+          # print(fileToDisplay)
+          # html_text <- gsub("\r\n", "</br>", fileToDisplay)
+          # HTML(html_text)
+          # HTML(paste("<pre><code>", html_text, "</code></pre>"))
 
 
-        aceEditor(
-        outputId = "code",
-        value = fileToDisplay,
-        mode = "r",
-        theme = "chrome",
-        fontSize = 14,
-        height = "1000px",
-        readOnly = TRUE
-      )
-      })
-
-    } else if (file_extension == "md") {
-
-      output$file_viz <- renderUI({
-        fileToDisplay <- getURL(fileURL)
-        markdown::mark(fileToDisplay)
-        # print(fileToDisplay)
-        # html_text <- gsub("\r\n", "</br>", fileToDisplay)
-        # HTML(html_text)
-      })
-
-    } else if (file_extension == "html") {
-
-      output$file_viz <- renderUI({
-        fileToDisplay <- getURL(fileURL)
-        HTML(fileToDisplay)
-        # print(fileToDisplay)
-        # html_text <- gsub("\r\n", "</br>", fileToDisplay)
-        # HTML(html_text)
-      })
-
-    } else if (file_extension == "txt") {
-
-      output$file_viz <- renderUI({
-        fileToDisplay <- getURL(fileURL)
-        aceEditor(
-        outputId = "code",
-        value = fileToDisplay,
-        mode = "text",
-        theme = "chrome",
-        fontSize = 14,
-        height = "1000px",
-        readOnly = TRUE
-      )
-      })
-
+          aceEditor(
+            outputId = "code",
+            value = fileToDisplay,
+            mode = "r",
+            theme = "chrome",
+            fontSize = 14,
+            height = "1000px",
+            readOnly = TRUE
+          )
+        })
+      } else if (file_extension == "md") {
+        output$file_viz <- renderUI({
+          fileToDisplay <- getURL(fileURL)
+          HTML(markdown::mark(fileToDisplay))
+          # print(fileToDisplay)
+          # html_text <- gsub("\r\n", "</br>", fileToDisplay)
+          # HTML(html_text)
+        })
+      } else if (file_extension == "html") {
+        output$file_viz <- renderUI({
+          fileToDisplay <- getURL(fileURL)
+          HTML(fileToDisplay)
+          # print(fileToDisplay)
+          # html_text <- gsub("\r\n", "</br>", fileToDisplay)
+          # HTML(html_text)
+        })
+      } else if (file_extension %in% c("txt", "dat")) {
+        output$file_viz <- renderUI({
+          fileToDisplay <- getURL(fileURL)
+          aceEditor(
+            outputId = "code",
+            value = fileToDisplay,
+            mode = "text",
+            theme = "chrome",
+            fontSize = 14,
+            height = "1000px",
+            readOnly = TRUE
+          )
+        })
+      } else {
+        # shinyjs::alert("Invalid file type or file format.")
+      }
     } else {
-      #shinyjs::alert("Invalid file type or file format.")
+      # render an image or text saying file doesnt exist
+      shinyjs::alert("requested file not found.")
     }
 
   })
@@ -368,4 +427,3 @@ server <- function(input, output, session) {
    })
 
 }
-
