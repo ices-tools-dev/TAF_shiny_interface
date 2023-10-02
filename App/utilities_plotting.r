@@ -49,7 +49,8 @@ EGStatsPlot <- function(EGStatistic) {
                                 smoothing = .9, 
                                 width = 4), 
                     marker = list(size = 8)) %>%
-        layout(xaxis = list(title = "Year")) %>%
+        layout(xaxis = list(title = "Year"),
+                yaxis = list(title = "% of EG stocks in TAF")) %>%
         highlight(on = "plotly_hover", 
                     selected = attrs_selected(showlegend = FALSE))
 
