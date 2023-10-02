@@ -261,7 +261,7 @@ server <- function(input, output, session) {
         mode = "yaml",
         theme = "clouds_midnight",
         fontSize = 14,
-        height = "1000px",
+        height = "80vh",
         readOnly = TRUE
       )
       })
@@ -282,7 +282,7 @@ server <- function(input, output, session) {
         mode = "r",
         theme = "chrome",
         fontSize = 14,
-        height = "1000px",
+        height = "80vh",
         readOnly = TRUE
       )
       })
@@ -317,7 +317,7 @@ server <- function(input, output, session) {
         mode = "text",
         theme = "chrome",
         fontSize = 14,
-        height = "1000px",
+        height = "80vh",
         readOnly = TRUE
       )
       })
