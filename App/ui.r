@@ -50,6 +50,7 @@ library(reshape2)
 library(shinydashboard)
 library(data.tree)
 library(shinyAce)
+library(wesanderson)
 
 
 
