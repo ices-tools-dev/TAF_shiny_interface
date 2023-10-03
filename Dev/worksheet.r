@@ -1309,3 +1309,17 @@ getAceModes()
 getAceThemes()
 basename(stocklist$gitHubUrl)
 jsonlite::read_json(paste0("https://adminweb06.ices.dk/api/dir/","2022_cod.27.47d20_assessment"), simplifyVector = TRUE)
+
+
+library(RColorBrewer)
+# Define the number of colors you want
+nb.cols <- 18
+mycolors <- colorRampPalette(brewer.pal(8, "Set2"))(nb.cols)
+install.packages("wesanderson")
+library(wesanderson)
+colorRampPalette(wes_palette("Darjeeling1"))(13)
+
+EGStats <- jsonlite::read_json("https://adminweb06.ices.dk/api/getEGStatistics", simplifyVector = TRUE)
+
+df2=data.frame(expertGroup=unique(EGStats$expertGroup),cc=colorRampPalette(wes_palette("Darjeeling1"))(13))
+test <- dplyr::inner_join(EGStats,df2)
