@@ -194,6 +194,7 @@ server <- function(input, output, session) {
   output$repo_string <- renderPrint({
     paste("Repo name:", paste0(input$repo_year, "_", input$stock_code, "_", input$repo_type))
   })
+  
 
   html_treeDF <- reactive({
     # reacts to url changes
@@ -220,8 +221,13 @@ server <- function(input, output, session) {
       paste0("?tab=Assessment%20results&repo=", query_string$repo, "&file=", fileName),
       "push"
     )
-  })
 
+    # fileNameTitle <- renderUI({
+    #   print(fileName)
+    #   print("here")
+    # })
+  })
+  
   observeEvent(selectedFile$name, {
     id <- which(html_treeDF()$pathString == selectedFile$name)
 

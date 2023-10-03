@@ -179,6 +179,7 @@ tagList(
                         status = "primary"
                     ),
             sidebarLayout(
+                
                 sidebarPanel(
                     width = 4,
                     style = "height: 85vh; overflow-y: auto; overflow-x: auto; white-space: normal;",
@@ -186,8 +187,8 @@ tagList(
                 ),
                 mainPanel(
                     width = 8,
-                    style = "height: 85vh; overflow-y: auto;",               
-                    # verbatimTextOutput(outputId ="clicked_text"),
+                    style = "height: 85vh; overflow-y: auto;", 
+                    # uiOutput(outputId = "fileNameTitle"),              
                     uiOutput(outputId = "file_viz")             
                 )
             ),
