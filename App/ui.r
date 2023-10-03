@@ -181,12 +181,12 @@ tagList(
             sidebarLayout(
                 sidebarPanel(
                     width = 4,
-                    style = "height: 80vh; overflow-y: auto; overflow-x: auto; white-space: normal;",
+                    style = "height: 85vh; overflow-y: auto; overflow-x: auto; white-space: normal;",
                     htmlOutput(outputId = "html_tree", inline = FALSE)
                 ),
                 mainPanel(
                     width = 8,
-                    style = "height: 80vh; overflow-y: auto; white-space: normal;",               
+                    style = "height: 85vh; overflow-y: auto;",               
                     # verbatimTextOutput(outputId ="clicked_text"),
                     uiOutput(outputId = "file_viz")             
                 )

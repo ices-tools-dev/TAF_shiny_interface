@@ -308,7 +308,7 @@ server <- function(input, output, session) {
         # )
       } else if (file_extension == "png") {
         output$file_viz <- renderText({
-          c('<img src="', fileURL, '" width="100%">')
+          c('<img src="', fileURL, '" width="85%" height="85%">')
         })
         # output$fileViewer <- renderImage({
         #   list(src = input$urlInput, contentType = "image/png")
