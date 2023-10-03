@@ -50,6 +50,7 @@ library(reshape2)
 library(shinydashboard)
 library(data.tree)
 library(shinyAce)
+library(wesanderson)
 
 
 
@@ -180,12 +181,12 @@ tagList(
             sidebarLayout(
                 sidebarPanel(
                     width = 4,
-                    style = "height: fit-content; width: fit-content; white-space: normal;",
+                    style = "height: 85vh; overflow-y: auto; overflow-x: auto; white-space: normal;",
                     htmlOutput(outputId = "html_tree", inline = FALSE)
                 ),
                 mainPanel(
                     width = 8,
-                    style = "overflow-y: auto; white-space: normal;",               
+                    style = "height: 85vh; overflow-y: auto;",               
                     # verbatimTextOutput(outputId ="clicked_text"),
                     uiOutput(outputId = "file_viz")             
                 )
